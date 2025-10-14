@@ -1,0 +1,161 @@
+import axios from "axios";
+const createUserApi = (name, email, password) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/register`;
+  const data = {
+    name,
+    email,
+    password,
+  };
+  return axios.post(URL_API, data);
+};
+
+const loginUserApi = (email, password) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/login`;
+  const data = {
+    email,
+    password,
+  };
+  return axios.post(URL_API, data);
+};
+const getSanPhamHotApi = () => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/sanphamhot`;
+  return axios.get(URL_API);
+};
+
+const getSanPhamBanChayApi = () => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/sanphambanchay`;
+  return axios.get(URL_API);
+};
+
+const getSanPhamIDApi = (id) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/sanpham/${id}`;
+  return axios.get(URL_API);
+};
+const getSanPhamApi = () => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/sanpham`;
+  return axios.get(URL_API);
+};
+const getDanhMucApi = () => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/danhmuc`;
+  return axios.get(URL_API);
+};
+const getMauSacApi = () => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/mausac`;
+  return axios.get(URL_API);
+};
+const getBlogApi = () => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/blog`;
+  return axios.get(URL_API);
+};
+const getUserApi = () => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/user`;
+  return axios.get(URL_API);
+};
+const getMeApi = () => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/me`;
+  return axios.get(URL_API);
+};
+const getGioHangApi = () => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/giohang`;
+  return axios.get(URL_API);
+};
+const updateGioHangApi = (id, soluong) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/updatesoluong`;
+  const data = {
+    id,
+    soluong,
+  };
+  return axios.post(URL_API, data);
+};
+const addGioHangApi = (soluong, id_sanpham, id_user, id_mau) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/addgiohang`;
+  const data = {
+    soluong,
+    id_sanpham,
+    id_user,
+    id_mau,
+  };
+  return axios.post(URL_API, data);
+};
+const updateMauGHApi = (id, id_mau) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/updatemau`;
+  const data = {
+    id,
+    id_mau,
+  };
+  return axios.post(URL_API, data);
+};
+const deleteGHApi = (id) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/deletegh`;
+  const data = {
+    id,
+  };
+  return axios.post(URL_API, data);
+};
+const createOrders = (
+  id_user,
+  items,
+  ten,
+  sdt,
+  dia_chi,
+  cach_nhan,
+  cach_thanhtoan
+) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/createorders`;
+  const data = {
+    id_user,
+    items,
+    ten,
+    sdt,
+    dia_chi,
+    cach_nhan,
+    cach_thanhtoan,
+  };
+  return axios.post(URL_API, data);
+};
+const checkStatusApi = (orderId) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/status`;
+  const data = {
+    orderId,
+  };
+  return axios.post(URL_API, data);
+};
+const getOrdersApi = (id_user) => {
+  if (id_user === undefined || id_user === null) {
+    return Promise.reject(new Error("id_user không hợp lệ"));
+  }
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/orders`;
+  const data = {
+    id_user,
+  };
+  return axios.post(URL_API, data);
+};
+const getOrderItemApi = (id_order) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/orderitem`;
+  const data = {
+    id_order,
+  };
+  return axios.post(URL_API, data);
+};
+export {
+  createUserApi,
+  loginUserApi,
+  getSanPhamHotApi,
+  getSanPhamBanChayApi,
+  getSanPhamIDApi,
+  getSanPhamApi,
+  getDanhMucApi,
+  getMauSacApi,
+  getBlogApi,
+  getUserApi,
+  getMeApi,
+  getGioHangApi,
+  updateGioHangApi,
+  addGioHangApi,
+  updateMauGHApi,
+  createOrders,
+  checkStatusApi,
+  deleteGHApi,
+  getOrdersApi,
+  getOrderItemApi,
+};
