@@ -4,6 +4,7 @@ const Orders = require("./orders");
 
 const SanPham = require("./sanpham");
 const sequelize = require("../config/database");
+const rom = require("./rom");
 const OrderItem = sequelize.define(
   "order_items",
   {
@@ -26,6 +27,11 @@ const OrderItem = sequelize.define(
       allowNull: false,
       references: { model: mausac, key: "id" },
     },
+    id_rom: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: { model: rom, key: "id" },
+    },
   },
   { tableName: "order_items", timestamps: false }
 );
@@ -36,4 +42,6 @@ SanPham.hasMany(OrderItem, { foreignKey: "id_sanpham" });
 OrderItem.belongsTo(SanPham, { foreignKey: "id_sanpham" });
 mausac.hasMany(OrderItem, { foreignKey: "id_mau" });
 OrderItem.belongsTo(mausac, { foreignKey: "id_mau" });
+rom.hasMany(OrderItem, { foreignKey: "id_rom" });
+OrderItem.belongsTo(rom, { foreignKey: "id_rom" });
 module.exports = { Orders, OrderItem };

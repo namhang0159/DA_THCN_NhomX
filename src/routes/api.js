@@ -22,6 +22,9 @@ const {
   getOrderItem,
   getOrder,
   deleteGioHang,
+  getRom,
+  getRomByID,
+  updateRomGioHang,
 } = require("../controllers/homeController");
 
 const auth = require("../middleware/auth");
@@ -45,6 +48,7 @@ routerAPI.get("/giohang", getGioHang);
 routerAPI.post("/updatesoluong", updateGioHang);
 routerAPI.post("/addgiohang", addGioHang);
 routerAPI.post("/updatemau", updateMauGioHang);
+routerAPI.post("/updaterom", updateRomGioHang);
 routerAPI.post("/deletegh", deleteGioHang);
 routerAPI.post("/payment", createPayment);
 routerAPI.post("/callback", callbackPayment);
@@ -52,4 +56,6 @@ routerAPI.post("/status", statusPayment);
 routerAPI.post("/createorders", createOrders);
 routerAPI.post("/orders", getOrder);
 routerAPI.post("/orderitem", getOrderItem);
+routerAPI.get("/rom", getRom);
+routerAPI.get("/romid", getRomByID);
 module.exports = routerAPI;

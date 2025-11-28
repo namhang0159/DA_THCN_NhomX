@@ -3,6 +3,7 @@ const User = require("./user");
 const sanpham = require("./sanpham");
 const { DataTypes } = require("sequelize");
 const mausac = require("./mausac");
+const rom = require("./rom");
 const giohang = sequelize.define(
   "giohang",
   {
@@ -35,6 +36,14 @@ const giohang = sequelize.define(
         key: "id",
       },
     },
+    id_rom: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: rom,
+        key: "id",
+      },
+    },
   },
   { tableName: "giohang", timestamps: false }
 );
@@ -46,4 +55,6 @@ giohang.belongsTo(User, { foreignKey: "id_user" });
 
 mausac.hasMany(giohang, { foreignKey: "id_mau" });
 giohang.belongsTo(mausac, { foreignKey: "id_mau" });
+rom.hasMany(giohang, { foreignKey: "id_rom" });
+giohang.belongsTo(rom, { foreignKey: "id_rom" });
 module.exports = giohang;

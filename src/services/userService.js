@@ -10,13 +10,15 @@ const Blog = require("../models/blog");
 const giohang = require("../models/giohang");
 const Orders = require("../models/orders");
 const { OrderItem } = require("../models/orderitem");
+const rom = require("../models/rom");
+const { where } = require("sequelize");
 
 require("dotenv").config();
 const createUserService = async (name, email, password) => {
   if (!password) {
     throw new Error("Password is required");
   }
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ where: { email } });
   if (user) {
     console.log("User exist");
     return null;
@@ -168,10 +170,16 @@ const updateGioHangService = async (id, soluong) => {
     return null;
   }
 };
-const addGioHangService = async (soluong, id_sanpham, id_user, id_mau) => {
+const addGioHangService = async (
+  soluong,
+  id_sanpham,
+  id_user,
+  id_mau,
+  id_rom
+) => {
   try {
     const exist = await giohang.findOne({
-      where: { id_user, id_sanpham, id_mau },
+      where: { id_user, id_sanpham, id_mau, id_rom },
     });
 
     if (exist) {
@@ -184,6 +192,7 @@ const addGioHangService = async (soluong, id_sanpham, id_user, id_mau) => {
         id_sanpham,
         id_user,
         id_mau,
+        id_rom,
       });
       return result;
     }
@@ -206,6 +215,15 @@ const deleteGioHangService = async (id) => {
 const updateMauGioHangService = async (id, id_mau) => {
   try {
     const result = await giohang.update({ id_mau }, { where: { id } });
+    return result;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+const updateRomGioHangService = async (id, id_rom) => {
+  try {
+    const result = await giohang.update({ id_rom }, { where: { id } });
     return result;
   } catch (error) {
     console.log(error);
@@ -244,7 +262,8 @@ const createOrderItemService = async (
   soluong,
   id_order,
   id_sanpham,
-  id_mau
+  id_mau,
+  id_rom
 ) => {
   try {
     const result = await OrderItem.create({
@@ -252,6 +271,7 @@ const createOrderItemService = async (
       id_order,
       id_sanpham,
       id_mau,
+      id_rom,
     });
 
     return result;
@@ -282,6 +302,22 @@ const getOrderItemService = async (id_order) => {
     return null;
   }
 };
+const getRomService = async () => {
+  try {
+    const result = await rom.findAll();
+    return result;
+  } catch (error) {
+    return null;
+  }
+};
+const getRomByIDService = async (id) => {
+  try {
+    const result = await rom.findAll({ where: { id: id } });
+    return result;
+  } catch (error) {
+    return null;
+  }
+};
 module.exports = {
   createUserService,
   loginUserService,
@@ -301,4 +337,7 @@ module.exports = {
   getOrderItemService,
   getSanPhamALLIDService,
   deleteGioHangService,
+  getRomService,
+  getRomByIDService,
+  updateRomGioHangService,
 };

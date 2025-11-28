@@ -17,6 +17,7 @@ const {
   updateGioHangService,
   addGioHangService,
   updateMauGioHangService,
+  updateRomGioHangService,
   createOrderService,
   createOrderItemService,
   getOrdersApi,
@@ -24,6 +25,8 @@ const {
   getOrderItemService,
   getSanPhamALLIDService,
   deleteGioHangService,
+  getRomService,
+  getRomByIDService,
 } = require("../services/userService");
 const createUser = async (req, res) => {
   console.log("BODY:", req.body);
@@ -140,8 +143,14 @@ const updateGioHang = async (req, res) => {
   }
 };
 const addGioHang = async (req, res) => {
-  const { soluong, id_sanpham, id_user, id_mau } = req.body;
-  const data = await addGioHangService(soluong, id_sanpham, id_user, id_mau);
+  const { soluong, id_sanpham, id_user, id_mau, id_rom } = req.body;
+  const data = await addGioHangService(
+    soluong,
+    id_sanpham,
+    id_user,
+    id_mau,
+    id_rom
+  );
   if (data) {
     return res.status(200).json("Them thanh cong");
   } else {
@@ -151,6 +160,15 @@ const addGioHang = async (req, res) => {
 const updateMauGioHang = async (req, res) => {
   const { id, id_mau } = req.body;
   const data = await updateMauGioHangService(id, id_mau);
+  if (data) {
+    return res.status(200).json("Thanh Cong");
+  } else {
+    return res.status(500).json({ message: "Update sanpham thất bại" });
+  }
+};
+const updateRomGioHang = async (req, res) => {
+  const { id, id_rom } = req.body;
+  const data = await updateRomGioHangService(id, id_rom);
   if (data) {
     return res.status(200).json("Thanh Cong");
   } else {
@@ -180,10 +198,14 @@ const callbackPayment = async (req, res) => {
     console.log(">>callback");
     console.log(req.body);
     const { orderId, resultCode } = req.body;
+    const id_order = orderId.split("_")[0];
     if (resultCode === 0) {
-      await Orders.update({ status: "Thành công" }, { where: { id: orderId } });
+      await Orders.update(
+        { status: "Thành công" },
+        { where: { id: id_order } }
+      );
     } else {
-      await Orders.update({ status: "Thất bại" }, { where: { id: orderId } });
+      await Orders.update({ status: "Thất bại" }, { where: { id: id_order } });
     }
     return res.status(200).json({ message: "Callback nhận thành công" });
   } else {
@@ -235,7 +257,8 @@ const createOrders = async (req, res) => {
         item.soluong,
         id_order,
         item.id_sanpham,
-        item.id_mau
+        item.id_mau,
+        item.id_rom
       );
       if (res) {
         console.log("Thanh Cong");
@@ -296,6 +319,22 @@ const getOrderItem = async (req, res) => {
     return res.status(500).json({ message: "Fetch sanpham thất bại" });
   }
 };
+const getRom = async (req, res) => {
+  const data = await getRomService();
+  if (data) {
+    return res.status(200).json(data);
+  } else {
+    return res.status(500).json({ message: "Lỗi fetch ROM" });
+  }
+};
+const getRomByID = async (req, res) => {
+  const data = await getRomByIDService(id);
+  if (data) {
+    return res.status(200).json(data);
+  } else {
+    return res.status(500).json({ message: "Lỗi fetch ROM" });
+  }
+};
 module.exports = {
   createUser,
   loginUser,
@@ -319,4 +358,7 @@ module.exports = {
   getOrderItem,
   getOrder,
   deleteGioHang,
+  getRom,
+  getRomByID,
+  updateRomGioHang,
 };
