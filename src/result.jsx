@@ -8,7 +8,6 @@ const Result = () => {
 
   useEffect(() => {
     const orderId = params.get("orderId");
-    // const resultCode = params.get("resultCode");
 
     if (!orderId) {
       setStatus("fail");

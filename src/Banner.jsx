@@ -8,26 +8,29 @@ export const Banner = () => {
       <Carousel autoPlay infiniteLoop showThumbs={false} showDots={false}>
         <div>
           <img
-            src="https://cdn2.cellphones.com.vn/insecure/rs:fill:690:300/q:90/plain/https://dashboard.cellphones.com.vn/storage/iphone-16-pro-max-home-08-2025.png"
+            src="./img/ip17.png"
             alt="Ảnh 1"
+            className="w-full  object-cover rounded-xl"
           />
         </div>
         <div>
           <img
-            src="https://cdn2.cellphones.com.vn/insecure/rs:fill:690:300/q:90/plain/https://dashboard.cellphones.com.vn/storage/copoassushome.png"
+            src="./img/ss.webp"
             alt="Ảnh 2"
+            className="w-full  object-cover rounded-xl"
           />
         </div>
         <div>
           <img
-            src="https://cdn2.cellphones.com.vn/insecure/rs:fill:690:300/q:90/plain/https://dashboard.cellphones.com.vn/storage/galaxy-z-7-home-0825.png"
+            src="./img/oppo.webp"
             alt="Ảnh 3"
+            className="w-full  object-cover rounded-xl"
           />
         </div>
         <div>
           <img
-            src="https://cdn2.cellphones.com.vn/insecure/rs:fill:690:300/q:90/plain/https://dashboard.cellphones.com.vn/storage/iPhone-17-Pro-PRE-home-0925.png"
-            alt="Ảnh 4"
+            src="./img/nubia.webp"
+            className="w-full  object-cover rounded-xl"
           />
         </div>
       </Carousel>

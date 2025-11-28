@@ -4,9 +4,11 @@ import {
   getGioHangApi,
   getMauSacApi,
   getMeApi,
+  getRomApi,
   getSanPhamApi,
   updateGioHangApi,
   updateMauGHApi,
+  updateRomGHApi,
 } from "./util/api";
 import { useNavigate } from "react-router-dom";
 
@@ -16,9 +18,10 @@ const ShoppingCard = () => {
   const [sanpham, setSanPham] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [mau, setMau] = useState([]);
+  const [rom, setRom] = useState([]);
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
-  // --- API Calls ---
+
   useEffect(() => {
     const fecthMe = async () => {
       const token = localStorage.getItem("access_token");
@@ -61,6 +64,14 @@ const ShoppingCard = () => {
     };
     fecthMau();
   }, []);
+  useEffect(() => {
+    const fetchRom = async () => {
+      const res = await getRomApi();
+      console.log(res.data);
+      setRom(res.data);
+    };
+    fetchRom();
+  }, []);
 
   const updateSoluong = async (idGioHang, soluong) => {
     try {
@@ -83,7 +94,13 @@ const ShoppingCard = () => {
     } else {
       setSelectedItems([
         ...selectedItems,
-        { id: gh.id, id_sanpham: gh.id_sanpham, soluong: gh.soluong, ten_mau },
+        {
+          id: gh.id,
+          id_sanpham: gh.id_sanpham,
+          soluong: gh.soluong,
+          ten_mau,
+          id_rom: gh.id_rom,
+        },
       ]);
     }
   };
@@ -94,6 +111,7 @@ const ShoppingCard = () => {
       id_sanpham: item.id_sanpham,
       soluong: item.soluong,
       id_mau: item.id_mau,
+      id_rom: item.id_rom,
     }));
     setSelectedItems(allItems);
   };
@@ -116,6 +134,17 @@ const ShoppingCard = () => {
       }
     } catch (error) {
       console.error("Lỗi đổi màu:", error);
+    }
+  };
+  const updateRomGH = async (id, id_rom) => {
+    try {
+      const res = await updateRomGHApi(id, id_rom);
+      if (res) {
+        const reload = await getGioHangApi();
+        setGiohang(reload.data);
+      }
+    } catch (error) {
+      console.error("Lỗi đổi ROM:", error);
     }
   };
 
@@ -156,6 +185,8 @@ const ShoppingCard = () => {
             const sp = sanpham.find((s) => s.id === gh.id_sanpham);
             if (!sp) return null;
             const mauSac = mau.filter((it) => it.id_sanpham === sp.id);
+            const ROM = rom.filter((i) => i.id_sanpham === sp.id);
+            const ROMI = rom.find((i) => i.id === gh.id_rom);
             return (
               <div
                 key={index}
@@ -185,7 +216,10 @@ const ShoppingCard = () => {
                   <div className="flex-1 ml-4">
                     <h3 className="font-medium text-gray-800">{sp.tieu_de}</h3>
                     <p className="text-red-500 font-semibold">
-                      {Number(sp.gia_ban).toLocaleString()}₫
+                      {Number(
+                        Number(sp.gia_ban) + Number(ROMI.gia_thaydoi)
+                      ).toLocaleString()}
+                      ₫
                     </p>
                   </div>
                   {/* Màu sắc */}
@@ -198,6 +232,20 @@ const ShoppingCard = () => {
                       {mauSac.map((mItem, index) => (
                         <option key={index} value={mItem.id}>
                           {mItem.ten_mau}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {/* ROM */}
+                  <div className="flex-1 ml-4">
+                    <h3 className=" text-gray-800 font-bold">Dung lượng</h3>
+                    <select
+                      value={gh?.id_rom ?? ""}
+                      onChange={(e) => updateRomGH(gh.id, e.target.value)}
+                    >
+                      {ROM.map((mItem, index) => (
+                        <option key={index} value={mItem.id}>
+                          {mItem.rom}
                         </option>
                       ))}
                     </select>

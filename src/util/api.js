@@ -67,13 +67,14 @@ const updateGioHangApi = (id, soluong) => {
   };
   return axios.post(URL_API, data);
 };
-const addGioHangApi = (soluong, id_sanpham, id_user, id_mau) => {
+const addGioHangApi = (soluong, id_sanpham, id_user, id_mau, id_rom) => {
   const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/addgiohang`;
   const data = {
     soluong,
     id_sanpham,
     id_user,
     id_mau,
+    id_rom,
   };
   return axios.post(URL_API, data);
 };
@@ -82,6 +83,14 @@ const updateMauGHApi = (id, id_mau) => {
   const data = {
     id,
     id_mau,
+  };
+  return axios.post(URL_API, data);
+};
+const updateRomGHApi = (id, id_rom) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/updaterom`;
+  const data = {
+    id,
+    id_rom,
   };
   return axios.post(URL_API, data);
 };
@@ -137,6 +146,10 @@ const getOrderItemApi = (id_order) => {
   };
   return axios.post(URL_API, data);
 };
+const getRomApi = () => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/rom`;
+  return axios.get(URL_API);
+};
 export {
   createUserApi,
   loginUserApi,
@@ -158,4 +171,6 @@ export {
   deleteGHApi,
   getOrdersApi,
   getOrderItemApi,
+  getRomApi,
+  updateRomGHApi,
 };

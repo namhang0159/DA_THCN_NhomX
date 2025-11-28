@@ -192,7 +192,7 @@ export const Header = () => {
                             className="block data-focus:bg-blue-100 text-center p-4"
                             onClick={() => navigate("/order")}
                           >
-                            Đơn hàng thanh toán
+                            Đơn hàng của bạn
                           </a>
                         </MenuItem>
                         <MenuItem>
@@ -360,7 +360,7 @@ export const Header = () => {
                               className="block data-focus:bg-blue-100 text-center p-4"
                               onClick={navigate("/orders")}
                             >
-                              Đơn hàng thanh toán
+                              Đơn hàng của bạn
                             </a>
                           </MenuItem>
                           <MenuItem>

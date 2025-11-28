@@ -91,6 +91,9 @@ const Orders = () => {
           return (
             <div
               key={oid}
+              onClick={() => {
+                navigate(`/orderinfo/${oid}`);
+              }}
               className="mb-6 p-4 border rounded-xl bg-white shadow-md hover:shadow-xl transition"
             >
               {/* Thông tinn */}

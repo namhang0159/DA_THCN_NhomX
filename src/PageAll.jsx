@@ -21,6 +21,7 @@ export const PageAll = () => {
   return (
     <div>
       <Product title={"Điện thoại"} data={sanpham} type={danhmuc} />
+      <div className="flex "></div>
     </div>
   );
 };

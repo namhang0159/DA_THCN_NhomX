@@ -14,6 +14,7 @@ import ShoppingCard from "./shoppingcart.jsx";
 import PageSearch from "./PageSearch.jsx";
 import Result from "./result.jsx";
 import Orders from "./orders.jsx";
+import { Orderinfo } from "./orderinfo.jsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -59,13 +60,16 @@ const router = createBrowserRouter([
         path: "/order",
         element: <Orders></Orders>,
       },
+      {
+        path: "/orderinfo/:id",
+        element: <Orderinfo />,
+      },
     ],
   },
 ]);
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    {/* <App /> */}
     <RouterProvider router={router} />,
   </StrictMode>
 );

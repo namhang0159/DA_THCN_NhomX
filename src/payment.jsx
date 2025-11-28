@@ -3,6 +3,7 @@ import {
   createOrders,
   getMauSacApi,
   getMeApi,
+  getRomApi,
   getSanPhamIDApi,
 } from "./util/api";
 import { useNavigate } from "react-router-dom";
@@ -20,6 +21,7 @@ const Payment = () => {
   const [hoten, setHoten] = useState("");
   const [sdt, setSdt] = useState("");
   const [diachi, setDiachi] = useState("");
+  const [rom, setRom] = useState([]);
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem("checkout_items")) || [];
     console.log("checkout_items:", data);
@@ -33,7 +35,12 @@ const Payment = () => {
           items.map(async (it) => {
             const res = await getSanPhamIDApi(it.id_sanpham);
             console.log("API trả về:", res);
-            return { ...res.data, soluong: it.soluong, ten_mau: it.ten_mau };
+            return {
+              ...res.data,
+              soluong: it.soluong,
+              ten_mau: it.ten_mau,
+              id_rom: it.id_rom,
+            };
           })
         );
         setSanPham(allProducts);
@@ -43,16 +50,36 @@ const Payment = () => {
     };
     fetchSanPham();
   }, [items]);
+  useEffect(() => {
+    const fetchRom = async () => {
+      try {
+        const res = await getRomApi();
+        const data = res.data;
+        setRom(data);
+      } catch (error) {
+        console.log("Lỗi fetch Rom :", error);
+      }
+    };
+    fetchRom();
+  }, []);
 
   useEffect(() => {
     if (sanpham.length > 0) {
-      const tong = sanpham.reduce(
-        (sum, s) => sum + Number(s.gia_ban) * Number(s.soluong || 1),
-        0
-      );
+      const tong = sanpham.reduce((sum, s) => {
+        const ite = items.find(
+          (i) => i.id_sanpham === s.id && i.id_rom === s.id_rom
+        );
+        const romC = rom.find((i) => i.id === ite?.id_rom);
+
+        return (
+          sum +
+          Number(Number(s.gia_ban) + Number(romC.gia_thaydoi)) *
+            Number(s.soluong || 1)
+        );
+      }, 0);
       setTien(tong);
     }
-  }, [sanpham]);
+  }, [sanpham, rom, items]);
   useEffect(() => {
     const fetchMe = async () => {
       try {
@@ -90,10 +117,12 @@ const Payment = () => {
         const matched = res.data.find(
           (i) => i.ten_mau === sp.ten_mau && i.id_sanpham === sp.id
         );
+        const tim = rom.find((i) => i.id_sanpham === sp.id);
         return {
           id_sanpham: sp.id,
           soluong: sp.soluong,
           id_mau: matched?.id || null,
+          id_rom: tim.id,
         };
       });
       console.log("order nè", orderItems);
@@ -118,10 +147,12 @@ const Payment = () => {
         const matched = res.data.find(
           (i) => i.ten_mau === sp.ten_mau && i.id_sanpham === sp.id
         );
+        const tim = rom.find((i) => i.id_sanpham === sp.id);
         return {
           id_sanpham: sp.id,
           soluong: sp.soluong,
           id_mau: matched?.id || null,
+          id_rom: tim.id,
         };
       });
       console.log(orderItems);
@@ -192,23 +223,31 @@ const Payment = () => {
           <h2 className="text-2xl font-semibold mb-4 text-gray-800">
             Đơn hàng
           </h2>
-          {sanpham.length > 0 ? (
-            sanpham.map((item, index) => (
+          {sanpham.map((item, index) => {
+            const RomC = rom.find(
+              (r) => r.id === item.id_rom && r.id_sanpham === item.id
+            );
+
+            return (
               <div
-                className="border rounded-xl p-4 bg-gray-50 mb-4"
                 key={index}
+                className="border rounded-xl p-4 bg-gray-50 mb-4"
               >
                 <h3 className="text-lg font-semibold">{item.tieu_de}</h3>
                 <p className="text-red-600 font-bold text-xl">
-                  {Number(item.gia_ban)?.toLocaleString("vi-VN")}₫
+                  {Number(
+                    Number(item.gia_ban) + Number(RomC.gia_thaydoi)
+                  ).toLocaleString("vi-VN")}
+                  ₫
                 </p>
                 <p className="text-gray-700">Màu đã chọn: {item.ten_mau}</p>
+                <p className="text-gray-700">
+                  ROM đã chọn: {RomC ? RomC.rom : "Không có"}
+                </p>
                 <p className="text-gray-700">Số lượng: {item.soluong}</p>
               </div>
-            ))
-          ) : (
-            <p>Không có sản phẩm nào để thanh toán.</p>
-          )}
+            );
+          })}
         </section>
 
         {/* Cách thức nhận hàng */}

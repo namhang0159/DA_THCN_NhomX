@@ -4,6 +4,7 @@ import {
   addGioHangApi,
   getMauSacApi,
   getMeApi,
+  getRomApi,
   getSanPhamIDApi,
 } from "./util/api";
 import Blog from "./blog";
@@ -27,6 +28,9 @@ const PageSP = () => {
   const [mausacC, setMausacC] = useState();
   const [login, setLogin] = useState(null);
   const [idmau, setIdMau] = useState();
+  const [rom, setRom] = useState([]);
+  const [romC, setRomC] = useState(null);
+  const [gia_tang, setGia_tang] = useState(null);
   useEffect(() => {
     const fetchSanPham = async () => {
       try {
@@ -53,6 +57,17 @@ const PageSP = () => {
       setLogin(loginS);
     }
   }, []);
+  useEffect(() => {
+    const fetchRom = async () => {
+      const res = await getRomApi();
+      const data = res.data;
+      if (data) {
+        const loc = data.filter((i) => i.id_sanpham === Number(id));
+        setRom(loc);
+      }
+    };
+    fetchRom();
+  }, []);
   const addGioHang = async () => {
     if (!mausacC) {
       openModal("Cần chọn màu!");
@@ -63,11 +78,15 @@ const PageSP = () => {
       navigate("/login");
       return;
     }
+    if (romC == null) {
+      openModal("Cần chọn Rom!");
+      return;
+    }
     const res = await getMeApi();
     const idU = res.data.id;
 
     try {
-      const res = await addGioHangApi(1, Number(sanpham.id), idU, idmau);
+      const res = await addGioHangApi(1, Number(sanpham.id), idU, idmau, romC);
       openModal("Thêm thành công!");
       console.log(res);
     } catch (err) {
@@ -100,10 +119,16 @@ const PageSP = () => {
             <p className="text-gray-600 text-lg font-bold">Giá sản phẩm</p>
             <div className="flex gap-10 items-center">
               <p className="text-red-600 font-bold text-3xl mt-2">
-                {Number(sanpham.gia_ban).toLocaleString("vi-VN")} đ
+                {Number(
+                  Number(sanpham.gia_ban) + Number(gia_tang)
+                ).toLocaleString("vi-VN")}{" "}
+                đ
               </p>
               <p className="text-gray-400 text-lg line-through mt-3">
-                {Number(sanpham.gia_ban * 1.5).toLocaleString("vi-VN")} đ
+                {Number(
+                  Number(sanpham.gia_ban * 1.25) + Number(gia_tang)
+                ).toLocaleString("vi-VN")}{" "}
+                đ
               </p>
             </div>
           </div>
@@ -139,20 +164,43 @@ const PageSP = () => {
               </p>
             )}
           </div>
+          <div className="flex gap-4 items-center flex-wrap">
+            {rom.length > 0 ? (
+              rom.map((item, index) => (
+                <div
+                  onClick={() => {
+                    setRomC(item.id);
+                    setGia_tang(item.gia_thaydoi);
+                  }}
+                  key={index}
+                  className={`flex items-center p-4 w-42 gap-4 bg-white rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-200 ${
+                    romC === item.id ? "border-red-600" : ""
+                  }`}
+                >
+                  <p className="text-sm font-bold text-gray-700">{item.rom}</p>
+                </div>
+              ))
+            ) : (
+              <p className="col-span-full text-center text-gray-500">
+                Mặc định 64gb
+              </p>
+            )}
+          </div>
 
           <div className="flex gap-4">
             <button
               className="w-[80%] bg-red-600 text-white py-3 rounded-2xl text-xl font-semibold hover:bg-red-700 transition"
               onClick={() => {
                 if (login) {
-                  if (!idmau) {
-                    openModal("Cần chọn màu !");
+                  if (!idmau || !romC) {
+                    openModal("Cần chọn màu hoặc Rom !");
                   } else if (login) {
                     const checkoutItem = {
                       id_sanpham: sanpham.id,
                       soluong: 1,
                       ten_mau: mausacC,
                       id_mau: idmau,
+                      id_rom: romC,
                     };
 
                     localStorage.setItem(
