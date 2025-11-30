@@ -28,11 +28,19 @@ const {
 } = require("../controllers/homeController");
 
 const auth = require("../middleware/auth");
+const {
+  loginAdmin,
+  getAdminMe,
+  createAdmin,
+} = require("../controllers/adminController");
+const authAdmin = require("../middleware/authAdmiin");
 
 const routerAPI = express.Router();
 routerAPI.get("/", (req, res) => {
   return res.status(200).json("hello worrr");
 });
+
+//USER :
 routerAPI.post("/register", createUser);
 routerAPI.post("/login", loginUser);
 routerAPI.get("/user", getUser);
@@ -58,4 +66,9 @@ routerAPI.post("/orders", getOrder);
 routerAPI.post("/orderitem", getOrderItem);
 routerAPI.get("/rom", getRom);
 routerAPI.get("/romid", getRomByID);
+
+//ADMIN
+routerAPI.post("/registerAdmin", createAdmin);
+routerAPI.post("/loginAdmin", loginAdmin);
+routerAPI.get("/admin", authAdmin, getAdminMe);
 module.exports = routerAPI;
