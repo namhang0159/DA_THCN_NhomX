@@ -5,10 +5,13 @@ import {
   getMauSacApi,
   getMeApi,
   getRomApi,
+  getSanPhamHotApi,
   getSanPhamIDApi,
 } from "./util/api";
 import Blog from "./blog";
 import Modal from "react-modal";
+import { GroupDanhGia } from "./compoment/danhgia/groupDanhGia";
+import { ListSale } from "./ListSale";
 const PageSP = () => {
   const [modalIsOpen, setIsOpen] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
@@ -42,6 +45,7 @@ const PageSP = () => {
         console.error("Lỗi fetch sản phẩm:", error);
       }
     };
+
     fetchSanPham();
     const fetchMausac = async () => {
       const res = await getMauSacApi();
@@ -51,6 +55,10 @@ const PageSP = () => {
     };
     fetchMausac();
   }, [id]);
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [id]);
+
   useEffect(() => {
     const loginS = localStorage.getItem("access_token");
     if (loginS) {
@@ -94,6 +102,16 @@ const PageSP = () => {
       openModal("Lỗi!!!!!");
     }
   };
+  const [sanphamhot, setSanPhamhot] = useState([]);
+
+  useEffect(() => {
+    const fecthSanPham = async () => {
+      const res = await getSanPhamHotApi();
+      const data = res.data;
+      setSanPhamhot(data);
+    };
+    fecthSanPham();
+  }, []);
 
   if (!sanpham || !sanpham.id) {
     return <p className="text-center mt-10">Đang tải sản phẩm...</p>;
@@ -252,6 +270,14 @@ const PageSP = () => {
         </div>
       </Modal>
       <Blog id={id} title={sanpham.tieu_de}></Blog>
+      <div className="mt-9">
+        <div className="w-[100%]">
+          <GroupDanhGia id={id} max={3} />
+        </div>
+      </div>
+      <div className="w-full">
+        <ListSale title={"Nổi Bật"} data={sanphamhot}></ListSale>
+      </div>
     </div>
   );
 };

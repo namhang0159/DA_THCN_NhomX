@@ -13,7 +13,7 @@ const Blog = ({ id, title }) => {
       setBlog(filter);
     };
     fecthBlog();
-  }, []);
+  }, [id]);
   return (
     <div className="w-full mt-10">
       <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">

@@ -15,6 +15,8 @@ import PageSearch from "./PageSearch.jsx";
 import Result from "./result.jsx";
 import Orders from "./orders.jsx";
 import { Orderinfo } from "./orderinfo.jsx";
+import { Review } from "./pages/review.jsx";
+import { Allreview } from "./pages/allreview.jsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -63,6 +65,14 @@ const router = createBrowserRouter([
       {
         path: "/orderinfo/:id",
         element: <Orderinfo />,
+      },
+      {
+        path: "/review",
+        element: <Review />,
+      },
+      {
+        path: "/allreview",
+        element: <Allreview />,
       },
     ],
   },

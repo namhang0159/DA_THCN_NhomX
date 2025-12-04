@@ -150,6 +150,34 @@ const getRomApi = () => {
   const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/rom`;
   return axios.get(URL_API);
 };
+const getDanhGiaApi = (id) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/danhgia`;
+  const data = {
+    id,
+  };
+  return axios.post(URL_API, data);
+};
+const taoDanhGiaApi = (id_sanpham, id_order, so_sao, noi_dung, hinh_anh) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/taodanhgia`;
+  const form = new FormData();
+  form.append("id_sanpham", id_sanpham);
+  form.append("id_order", id_order);
+  form.append("so_sao", so_sao);
+  form.append("noi_dung", noi_dung);
+  if (hinh_anh) form.append("hinh_anh", hinh_anh);
+
+  return axios.post(URL_API, form, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+};
+const checkDanhGiaApi = (id_sanpham, id_order) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/checkdanhgia`;
+  const data = {
+    id_sanpham,
+    id_order,
+  };
+  return axios.post(URL_API, data);
+};
 export {
   createUserApi,
   loginUserApi,
@@ -173,4 +201,7 @@ export {
   getOrderItemApi,
   getRomApi,
   updateRomGHApi,
+  getDanhGiaApi,
+  checkDanhGiaApi,
+  taoDanhGiaApi,
 };

@@ -1,5 +1,6 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
+  checkDanhGiaApi,
   getMeApi,
   getOrderItemApi,
   getOrdersApi,
@@ -9,12 +10,27 @@ import {
 import { useEffect, useState } from "react";
 
 export const Orderinfo = () => {
+  const navigate = useNavigate();
   const { id } = useParams();
   const [idMe, setIdMe] = useState();
   const [order, setOrder] = useState([]);
   const [item, setItem] = useState([]);
   const [sanpham, setSanpham] = useState([]);
   const [rom, setRom] = useState([]);
+  const [reviewedList, setReviewedList] = useState({});
+  useEffect(() => {
+    const fetchReviewed = async () => {
+      const res = {};
+      for (const o of item) {
+        const check = await checkDanhGiaApi(o.id_sanpham, id);
+        res[o.id_sanpham] = check.data.reviewed;
+        console.log(res);
+      }
+      setReviewedList(res);
+    };
+    fetchReviewed();
+  }, [item]);
+
   useEffect(() => {
     const fecthMe = async () => {
       const token = localStorage.getItem("access_token");
@@ -145,6 +161,8 @@ export const Orderinfo = () => {
             const sp = sanpham.find((s) => s.id === item.id_sanpham);
             const romC = rom.find((i) => i.id === item.id_rom);
             if (!sp) return null;
+            const reviewed = reviewedList[item.id_sanpham] ?? false;
+
             return (
               <div
                 key={item.id}
@@ -167,6 +185,16 @@ export const Orderinfo = () => {
                     Giá: {sp.gia_ban.toLocaleString()}đ
                   </p>
                 </div>
+                {order.status === "Thành Công" && !reviewed && (
+                  <button
+                    className="mt-2 px-4 py-1 bg-blue-600 text-white rounded"
+                    onClick={() =>
+                      navigate(`/review?sanpham=${sp.id}&order=${id}`)
+                    }
+                  >
+                    Đánh giá sản phẩm
+                  </button>
+                )}
               </div>
             );
           })}
