@@ -1,9 +1,10 @@
 const sequelize = require("../config/database");
-const User = require("./user");
-const sanpham = require("./sanpham");
+
 const { DataTypes } = require("sequelize");
 const mausac = require("./mausac");
 const rom = require("./rom");
+const sanpham = require("./sanpham");
+const User = require("./user");
 const giohang = sequelize.define(
   "giohang",
   {

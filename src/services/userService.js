@@ -11,7 +11,9 @@ const giohang = require("../models/giohang");
 const Orders = require("../models/orders");
 const { OrderItem } = require("../models/orderitem");
 const rom = require("../models/rom");
-const { where } = require("sequelize");
+const { where, DATE } = require("sequelize");
+const Danhgia = require("../models/danhgia");
+const { now } = require("sequelize/lib/utils");
 
 require("dotenv").config();
 const createUserService = async (name, email, password) => {
@@ -318,6 +320,50 @@ const getRomByIDService = async (id) => {
     return null;
   }
 };
+const getDanhGiaService = async (id_sanpham) => {
+  try {
+    const result = await Danhgia.findAll({ where: { id_sanpham } });
+    return result;
+  } catch (error) {
+    return null;
+  }
+};
+const createDanhGiaService = async (
+  id_user,
+  id_sanpham,
+  id_order,
+  so_sao,
+  noi_dung,
+  hinh_anh
+) => {
+  try {
+    const result = await Danhgia.create({
+      id_user,
+      id_sanpham,
+      id_order,
+      so_sao,
+      noi_dung,
+      hinh_anh,
+    });
+
+    return result;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+const checkDanhGiaService = async (id_user, id_sanpham, id_order) => {
+  try {
+    const result = await Danhgia.findOne({
+      where: { id_user: id_user, id_sanpham: id_sanpham, id_order: id_order },
+    });
+
+    return result;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
 module.exports = {
   createUserService,
   loginUserService,
@@ -340,4 +386,7 @@ module.exports = {
   getRomService,
   getRomByIDService,
   updateRomGioHangService,
+  getDanhGiaService,
+  createDanhGiaService,
+  checkDanhGiaService,
 };

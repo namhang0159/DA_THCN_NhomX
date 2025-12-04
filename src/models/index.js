@@ -5,9 +5,12 @@ const sequelize = require("../config/database");
 const SanPham = require("./sanpham");
 const SanPhamTag = require("./sanphamtag");
 const mausac = require("./mausac");
+
+// Định nghĩa quan hệ giữa SanPham và Mausac
 SanPham.hasMany(mausac, { foreignKey: "id_sanpham" });
 mausac.belongsTo(SanPham, { foreignKey: "id_sanpham" });
-// Định nghĩa quan hệ
+
+// Định nghĩa quan hệ many-to-many giữa SanPham và SanPhamTag
 SanPham.belongsToMany(SanPhamTag, {
   through: "sanpham_tag",
   foreignKey: "id_sanpham",
@@ -21,19 +24,10 @@ SanPhamTag.belongsToMany(SanPham, {
   otherKey: "id_sanpham",
   timestamps: false,
 });
-const SanPham = require("./sanpham");
-const MauSac = require("./mausac");
-
-// Associations
-SanPham.hasMany(MauSac, { foreignKey: "id_sanpham" });
-MauSac.belongsTo(SanPham, { foreignKey: "id_sanpham" });
 
 // Export tất cả để nơi khác dùng
 module.exports = {
-  sequelize,
   SanPham,
   SanPhamTag,
   mausac,
-  SanPham,
-  MauSac,
 };

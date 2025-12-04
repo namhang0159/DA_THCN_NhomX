@@ -27,6 +27,10 @@ const {
   deleteGioHangService,
   getRomService,
   getRomByIDService,
+  getDanhGia,
+  getDanhGiaService,
+  createDanhGiaService,
+  checkDanhGiaService,
 } = require("../services/userService");
 const createUser = async (req, res) => {
   console.log("BODY:", req.body);
@@ -328,6 +332,7 @@ const getRom = async (req, res) => {
   }
 };
 const getRomByID = async (req, res) => {
+  const { id } = req.params;
   const data = await getRomByIDService(id);
   if (data) {
     return res.status(200).json(data);
@@ -335,6 +340,63 @@ const getRomByID = async (req, res) => {
     return res.status(500).json({ message: "Lỗi fetch ROM" });
   }
 };
+const getDanhGiaID = async (req, res) => {
+  const { id } = req.body;
+  const data = await getDanhGiaService(id);
+  if (data) {
+    return res.status(200).json(data);
+  } else {
+    return res.status(500).json({ message: "Lỗi fetch DanhGia" });
+  }
+};
+const createDanhGia = async (req, res) => {
+  if (!req.user) {
+    return res
+      .status(401)
+      .json({ message: "Chưa xác thực hoặc thiếu access_token" });
+  }
+  const { id_sanpham, id_order, so_sao, noi_dung } = req.body;
+  let hinh_anh = null;
+  if (req.file) {
+    hinh_anh = "/uploads/danhgia/" + req.file.filename;
+  }
+  const data = await createDanhGiaService(
+    req.user.id,
+    id_sanpham,
+    id_order,
+    so_sao,
+    noi_dung,
+    hinh_anh
+  );
+  if (data) {
+    return res.status(200).json(data);
+  } else {
+    return res.status(500).json({ message: "Lỗi fetch DanhGia" });
+  }
+};
+const checkDanhGia = async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Chưa xác thực" });
+    }
+
+    const { id_sanpham, id_order } = req.body;
+
+    const checked = await checkDanhGiaService(
+      req.user.id,
+      id_sanpham,
+      id_order
+    );
+
+    return res.status(200).json({
+      reviewed: !!checked,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Server Error" });
+  }
+};
+
 module.exports = {
   createUser,
   loginUser,
@@ -361,4 +423,7 @@ module.exports = {
   getRom,
   getRomByID,
   updateRomGioHang,
+  getDanhGiaID,
+  createDanhGia,
+  checkDanhGia,
 };

@@ -25,6 +25,9 @@ const {
   getRom,
   getRomByID,
   updateRomGioHang,
+  getDanhGiaID,
+  createDanhGia,
+  checkDanhGia,
 } = require("../controllers/homeController");
 
 const auth = require("../middleware/auth");
@@ -34,6 +37,7 @@ const {
   createAdmin,
 } = require("../controllers/adminController");
 const authAdmin = require("../middleware/authAdmiin");
+const { uploadDanhGia } = require("../helper/uploadDanhgia");
 
 const routerAPI = express.Router();
 routerAPI.get("/", (req, res) => {
@@ -66,7 +70,14 @@ routerAPI.post("/orders", getOrder);
 routerAPI.post("/orderitem", getOrderItem);
 routerAPI.get("/rom", getRom);
 routerAPI.get("/romid", getRomByID);
-
+routerAPI.post("/danhgia", getDanhGiaID);
+routerAPI.post(
+  "/taodanhgia",
+  auth,
+  uploadDanhGia.single("hinh_anh"),
+  createDanhGia
+);
+routerAPI.post("/checkdanhgia", auth, checkDanhGia);
 //ADMIN
 routerAPI.post("/registerAdmin", createAdmin);
 routerAPI.post("/loginAdmin", loginAdmin);

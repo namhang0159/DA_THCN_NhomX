@@ -1,6 +1,5 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
-const sanpham = require("./sanpham");
 const sanphamtag = sequelize.define(
   "sanphamtag",
   {
