@@ -2,6 +2,8 @@ const { config } = require("dotenv");
 const Admin = require("../models/admin");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const Orders = require("../models/orders");
+const { Sequelize } = require("sequelize");
 const saltRounds = 10;
 require("dotenv").config();
 const createAdminService = async (username, email, password) => {
@@ -70,8 +72,74 @@ const loginAdminService = async (email, password) => {
     return null;
   }
 };
-
+const getDoanhThuNgayService = async (id_sanpham) => {
+  try {
+    const result = await Orders.findAll({
+      attributes: [
+        [Sequelize.fn("DATE", Sequelize.col("createdAt")), "ngay"],
+        [Sequelize.fn("SUM", Sequelize.col("amount")), "doanh_thu"],
+      ],
+      where: {
+        status: "Thành Công",
+      },
+      group: [Sequelize.fn("DATE", Sequelize.col("createdAt"))],
+      order: [[Sequelize.fn("DATE", Sequelize.col("createdAt")), "ASC"]],
+      raw: true,
+    });
+    return result;
+  } catch (error) {
+    return null;
+  }
+};
+const getDoanhThuThangService = async (id_sanpham) => {
+  try {
+    const result = await Orders.findAll({
+      attributes: [
+        [Sequelize.fn("YEAR", Sequelize.col("createdAt")), "nam"],
+        [Sequelize.fn("MONTH", Sequelize.col("createdAt")), "thang"],
+        [Sequelize.fn("SUM", Sequelize.col("amount")), "doanh_thu"],
+      ],
+      where: {
+        status: "Thành Công",
+      },
+      group: [
+        Sequelize.fn("YEAR", Sequelize.col("createdAt")),
+        Sequelize.fn("MONTH", Sequelize.col("createdAt")),
+      ],
+      order: [
+        [Sequelize.fn("YEAR", Sequelize.col("createdAt")), "ASC"],
+        [Sequelize.fn("MONTH", Sequelize.col("createdAt")), "ASC"],
+      ],
+      raw: true,
+    });
+    return result;
+  } catch (error) {
+    return null;
+  }
+};
+const getDoanhThuNamService = async (id_sanpham) => {
+  try {
+    const result = await Orders.findAll({
+      attributes: [
+        [Sequelize.fn("YEAR", Sequelize.col("createdAt")), "nam"],
+        [Sequelize.fn("SUM", Sequelize.col("amount")), "doanh_thu"],
+      ],
+      where: {
+        status: "Thành Công",
+      },
+      group: [Sequelize.fn("YEAR", Sequelize.col("createdAt"))],
+      order: [[Sequelize.fn("YEAR", Sequelize.col("createdAt")), "ASC"]],
+      raw: true,
+    });
+    return result;
+  } catch (error) {
+    return null;
+  }
+};
 module.exports = {
   loginAdminService,
   createAdminService,
+  getDoanhThuNgayService,
+  getDoanhThuThangService,
+  getDoanhThuNamService,
 };

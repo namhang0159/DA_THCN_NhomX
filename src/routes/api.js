@@ -35,6 +35,9 @@ const {
   loginAdmin,
   getAdminMe,
   createAdmin,
+  getDoanhThuNgay,
+  getDoanhThuThang,
+  getDoanhThuNam,
 } = require("../controllers/adminController");
 const authAdmin = require("../middleware/authAdmiin");
 const { uploadDanhGia } = require("../helper/uploadDanhgia");
@@ -82,4 +85,7 @@ routerAPI.post("/checkdanhgia", auth, checkDanhGia);
 routerAPI.post("/registerAdmin", createAdmin);
 routerAPI.post("/loginAdmin", loginAdmin);
 routerAPI.get("/admin", authAdmin, getAdminMe);
+routerAPI.get("/dtngay", getDoanhThuNgay);
+routerAPI.get("/dtthang", getDoanhThuThang);
+routerAPI.get("/dtnam", getDoanhThuNam);
 module.exports = routerAPI;

@@ -12,7 +12,15 @@ const Orders = sequelize.define(
       allowNull: false,
     },
     status: {
-      type: DataTypes.ENUM("Pending", "Thành Công", "Đã hủy"),
+      type: DataTypes.ENUM(
+        "Pending",
+        "Đã thanh toán - Chờ xác nhận",
+        "Chờ nhận tại cửa hàng",
+        "Đang giao",
+        "Thành Công",
+        "Đã hủy",
+        "Thất bại"
+      ),
       defaultValue: "Pending",
     },
     cach_thanhtoan: {

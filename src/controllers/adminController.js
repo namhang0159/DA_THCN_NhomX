@@ -1,6 +1,9 @@
 const {
   loginAdminService,
   createAdminService,
+  getDoanhThuNgayService,
+  getDoanhThuThangService,
+  getDoanhThuNamService,
 } = require("../services/adminService");
 const createAdmin = async (req, res) => {
   console.log("BODY:", req.body);
@@ -44,5 +47,35 @@ const getAdminMe = async (req, res) => {
     return res.status(500).json({ message: "Fetch user thất bại" });
   }
 };
-
-module.exports = { loginAdmin, getAdminMe, createAdmin };
+const getDoanhThuNgay = async (req, res) => {
+  const data = await getDoanhThuNgayService();
+  if (data) {
+    return res.status(200).json(data);
+  } else {
+    return res.status(500).json({ message: "Lỗi fetch" });
+  }
+};
+const getDoanhThuThang = async (req, res) => {
+  const data = await getDoanhThuThangService();
+  if (data) {
+    return res.status(200).json(data);
+  } else {
+    return res.status(500).json({ message: "Lỗi fetch" });
+  }
+};
+const getDoanhThuNam = async (req, res) => {
+  const data = await getDoanhThuNamService();
+  if (data) {
+    return res.status(200).json(data);
+  } else {
+    return res.status(500).json({ message: "Lỗi fetch" });
+  }
+};
+module.exports = {
+  loginAdmin,
+  getAdminMe,
+  createAdmin,
+  getDoanhThuNgay,
+  getDoanhThuThang,
+  getDoanhThuNam,
+};

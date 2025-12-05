@@ -205,7 +205,7 @@ const callbackPayment = async (req, res) => {
     const id_order = orderId.split("_")[0];
     if (resultCode === 0) {
       await Orders.update(
-        { status: "Thành công" },
+        { status: "Đã thanh toán - Chờ xác nhận" },
         { where: { id: id_order } }
       );
     } else {
