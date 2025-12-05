@@ -30,6 +30,18 @@ export const dashboardMenu = [
     section: "MENU",
   },
   {
+    title: "Thống kê",
+    icon: <i className="fa-solid fa-dashboard"></i>,
+    path: "/statistical",
+    section: "MENU",
+    children: [
+      { title: "Thống kê doanh thu", path: "/statistical" },
+      { title: "Thống kê đơn hàng", path: "/statistical/orders" },
+      { title: "Sản phẩm bán chạy", path: "/statistical/top-products" },
+      { title: "Thống kê đánh giá", path: "/statistical/reviews" },
+    ],
+  },
+  {
     title: "Cá nhân",
     icon: <i className="fa-solid fa-user-circle"></i>,
     path: "",

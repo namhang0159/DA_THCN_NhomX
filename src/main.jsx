@@ -6,6 +6,7 @@ import { MainLayout } from "./layouts/mainlayout.jsx";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Home } from "./pages/home.jsx";
 import Login from "./pages/login.jsx";
+import { Statistical } from "./pages/statistical.jsx";
 
 const router = createBrowserRouter([
   {
@@ -15,6 +16,10 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <Home />,
+      },
+      {
+        path: "/statistical",
+        element: <Statistical />,
       },
     ],
   },

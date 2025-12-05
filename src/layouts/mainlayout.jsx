@@ -8,9 +8,9 @@ export const MainLayout = () => {
     <div className="flex flex-col min-h-screen bg-gray-50 text-gray-900">
       <Header></Header>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1">
         {/* Sidebar */}
-        <aside className="hidden md:block">
+        <aside className="hidden md:block sticky top-0 h-screen">
           <Dashboard />
         </aside>
 
