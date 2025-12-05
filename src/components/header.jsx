@@ -12,7 +12,7 @@ export const Header = () => {
         console.log(res);
         if (data) {
           console.log(data);
-          setUsername(data.username);
+          setUsername(data.email);
         }
       } catch (error) {
         console.log("Lỗi", error);

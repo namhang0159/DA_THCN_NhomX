@@ -7,6 +7,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Home } from "./pages/home.jsx";
 import Login from "./pages/login.jsx";
 import { Statistical } from "./pages/statistical.jsx";
+import { Product } from "./pages/product.jsx";
 
 const router = createBrowserRouter([
   {
@@ -20,6 +21,10 @@ const router = createBrowserRouter([
       {
         path: "/statistical",
         element: <Statistical />,
+      },
+      {
+        path: "/product",
+        element: <Product />,
       },
     ],
   },

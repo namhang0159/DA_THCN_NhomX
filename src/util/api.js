@@ -24,6 +24,10 @@ const getDoanhThuNamApi = () => {
   const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/dtnam`;
   return axios.get(URL_API);
 };
+const getSanphamApi = () => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/sanpham`;
+  return axios.get(URL_API);
+};
 
 export {
   LoginApi,
@@ -31,4 +35,5 @@ export {
   getDoanhThuNgayApi,
   getDoanhThuThangApi,
   getDoanhThuNamApi,
+  getSanphamApi,
 };
