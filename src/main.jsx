@@ -6,8 +6,12 @@ import { MainLayout } from "./layouts/mainlayout.jsx";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Home } from "./pages/home.jsx";
 import Login from "./pages/login.jsx";
-import { Statistical } from "./pages/statistical.jsx";
+import { Statistical } from "./pages/statistical/statistical.jsx";
 import { Product } from "./pages/product.jsx";
+import { OrderStatusChart } from "./pages/statistical/orders.jsx";
+import { Topproducts } from "./pages/statistical/top-products.jsx";
+import { ReviewStatistic } from "./pages/statistical/review.jsx";
+import { ProductAdd } from "./pages/modal.jsx";
 
 const router = createBrowserRouter([
   {
@@ -25,6 +29,26 @@ const router = createBrowserRouter([
       {
         path: "/product",
         element: <Product />,
+      },
+      {
+        path: "/statistical/orders",
+        element: <OrderStatusChart />,
+      },
+      {
+        path: "/statistical/top-products",
+        element: <Topproducts />,
+      },
+      {
+        path: "/statistical/reviews",
+        element: <ReviewStatistic />,
+      },
+      {
+        path: "/products/add",
+        element: <ProductAdd />,
+      },
+      {
+        path: `/products/edit/:id`,
+        element: <ProductAdd />,
       },
     ],
   },

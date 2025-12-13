@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  getDoanhThuNamApi,
-  getDoanhThuNgayApi,
-  getDoanhThuThangApi,
-} from "../util/api";
+
 import {
   AreaChart,
   Bar,
@@ -17,6 +13,11 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import {
+  getDoanhThuNamApi,
+  getDoanhThuNgayApi,
+  getDoanhThuThangApi,
+} from "../../util/api";
 
 export const Statistical = () => {
   const [dtngay, setDtngay] = useState([]);
