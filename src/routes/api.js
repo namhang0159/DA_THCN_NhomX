@@ -38,9 +38,25 @@ const {
   getDoanhThuNgay,
   getDoanhThuThang,
   getDoanhThuNam,
+  getOrderStatusStatistic,
+  getOrdersNgay,
+  getOrdersThang,
+  getOrdersNam,
+  getTopSanPhamBanChay,
+  getTopDanhMucBanChay,
+  getThongKeSoSao,
+  getTop3SanPhamTot,
+  getTop3SanPhamThap,
+  getTiLeDanhGia,
+  createSanPhamController,
+  updateSanPhamController,
+  deleteSanPhamController,
+  getAllSanPhamController,
+  getSanPhamByIdController,
 } = require("../controllers/adminController");
 const authAdmin = require("../middleware/authAdmiin");
 const { uploadDanhGia } = require("../helper/uploadDanhgia");
+const { getSanPhamALLIDService } = require("../services/userService");
 
 const routerAPI = express.Router();
 routerAPI.get("/", (req, res) => {
@@ -88,4 +104,18 @@ routerAPI.get("/admin", authAdmin, getAdminMe);
 routerAPI.get("/dtngay", getDoanhThuNgay);
 routerAPI.get("/dtthang", getDoanhThuThang);
 routerAPI.get("/dtnam", getDoanhThuNam);
+routerAPI.get("/statistic/status", getOrderStatusStatistic);
+routerAPI.get("/statistic/day", getOrdersNgay);
+routerAPI.get("/statistic/month", getOrdersThang);
+routerAPI.get("/statistic/year", getOrdersNam);
+routerAPI.get("/thongke/top-sanpham", getTopSanPhamBanChay);
+routerAPI.get("/thongke/top-danhmuc", getTopDanhMucBanChay);
+routerAPI.get("/thongke/so-sao", getThongKeSoSao);
+routerAPI.get("/thongke/top3-tot", getTop3SanPhamTot);
+routerAPI.get("/thongke/top3-thap", getTop3SanPhamThap);
+routerAPI.get("/thongke/ti-le", getTiLeDanhGia);
+routerAPI.post("/product", getSanPhamByIdController);
+routerAPI.post("/createproduct", createSanPhamController);
+routerAPI.post("/updateProduct", updateSanPhamController);
+routerAPI.post("/deleteProduct", deleteSanPhamController);
 module.exports = routerAPI;
