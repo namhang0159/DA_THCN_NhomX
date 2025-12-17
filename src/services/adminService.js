@@ -10,7 +10,7 @@ const danhmucsanpham = require("../models/danhmucsanpham");
 const Danhgia = require("../models/danhgia");
 const rom = require("../models/rom");
 const mausac = require("../models/mausac");
-const User = require("../models/User");
+const User = require("../models/user");
 const sanphamtag = require("../models/sanphamtag");
 const { SanPham, SanPhamTag } = require("../models");
 const SanPhamTagMap = require("../models/sanpham_tag");
@@ -436,9 +436,12 @@ const getOrderAllervice = async () => {
 };
 const updateOrderStatusService = async (id, status) => {
   try {
-    const result = await Orders.update(status, {
-      where: { id },
-    });
+    const result = await Orders.update(
+      { status },
+      {
+        where: { id },
+      }
+    );
     return result;
   } catch (error) {
     console.log(error);
