@@ -103,6 +103,104 @@ const getDanhMucApi = () => {
   const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/danhmuc`;
   return axios.get(URL_API);
 };
+const getOrdersApi = () => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/orderAll`;
+  return axios.get(URL_API);
+};
+const updateOrderStatusAPI = (id, status) => {
+  const URL_API = `${
+    import.meta.env.VITE_BACKEND_URL
+  }/v1/api/updateStatusOrder`;
+  const data = { id, status };
+  return axios.post(URL_API, data);
+};
+const getOrderItemAPI = (id) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/orderIt`;
+  const data = { id };
+  return axios.post(URL_API, data);
+};
+const getUsersApi = () => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/user`;
+  return axios.get(URL_API);
+};
+const updateUserAPI = (id, data) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/updateUser`;
+  const dataGui = { id, data };
+  return axios.post(URL_API, dataGui);
+};
+const deleteUserAPI = (id) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/deleteUser`;
+  const dataGui = { id };
+  return axios.post(URL_API, dataGui);
+};
+const banUserAPI = (id, isBan) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/banUser`;
+  const dataGui = { id, isBan };
+  return axios.post(URL_API, dataGui);
+};
+const getCategoryApi = () => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/danhmuc`;
+  return axios.get(URL_API);
+};
+const createCateAPI = (ten_danh_muc, hinh_anh) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/createCate`;
+  const dataGui = { ten_danh_muc, hinh_anh };
+  return axios.post(URL_API, dataGui);
+};
+const deleteCateAPI = (id) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/deleteCate`;
+  const dataGui = { id };
+  return axios.post(URL_API, dataGui);
+};
+const updateCateAPI = (id, ten_danh_muc, hinh_anh) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/updateCate`;
+  const dataGui = { id, ten_danh_muc, hinh_anh };
+  return axios.post(URL_API, dataGui);
+};
+const getTagApi = () => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/getTag`;
+  return axios.get(URL_API);
+};
+const createTagAPI = (ten_tag) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/createTag`;
+  const dataGui = { ten_tag };
+  return axios.post(URL_API, dataGui);
+};
+const deleteTagAPI = (id) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/deleteTag`;
+  const dataGui = { id };
+  return axios.post(URL_API, dataGui);
+};
+const updateTagAPI = (id, ten_tag) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/updateTag`;
+  const dataGui = { id, ten_tag };
+  return axios.post(URL_API, dataGui);
+};
+const getTagProApi = (id_tag) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/getTagPro`;
+  const data = { id_tag };
+  return axios.post(URL_API, data);
+};
+const createTagProAPI = (id_sanpham, id_tag) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/createTagPro`;
+  const dataGui = { id_sanpham, id_tag };
+  return axios.post(URL_API, dataGui);
+};
+const deleteTagProAPI = (id_sanpham, id_tag) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/deleteTagPro`;
+  const dataGui = { id_sanpham, id_tag };
+  return axios.post(URL_API, dataGui);
+};
+const getDanhGiaApi = () => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/getDanhGia`;
+
+  return axios.get(URL_API);
+};
+const banDanhGiaApi = (id, is_ban) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/banDanhGia`;
+  const dataGui = { id, is_ban };
+  return axios.post(URL_API, dataGui);
+};
 export {
   LoginApi,
   fetchMeApi,
@@ -125,4 +223,24 @@ export {
   deleteSanPhamAPI,
   getDanhMucApi,
   getSanphamRomMauApi,
+  getOrdersApi,
+  updateOrderStatusAPI,
+  getOrderItemAPI,
+  getUsersApi,
+  updateUserAPI,
+  deleteUserAPI,
+  banUserAPI,
+  getCategoryApi,
+  createCateAPI,
+  deleteCateAPI,
+  updateCateAPI,
+  getTagApi,
+  createTagAPI,
+  deleteTagAPI,
+  updateTagAPI,
+  getTagProApi,
+  createTagProAPI,
+  deleteTagProAPI,
+  getDanhGiaApi,
+  banDanhGiaApi,
 };

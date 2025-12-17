@@ -5,7 +5,7 @@ import {
   updateSanPhamAPI,
   getDanhMucApi,
   getSanphamRomMauApi,
-} from "../util/api";
+} from "../../util/api";
 
 export const ProductAdd = () => {
   const { id } = useParams();
@@ -16,6 +16,7 @@ export const ProductAdd = () => {
     gia_ban: 0,
     hinh_anh: "",
     id_danh_muc: "",
+    noi_dung: "",
     roms: [],
     mausacs: [],
   });
@@ -40,6 +41,7 @@ export const ProductAdd = () => {
           gia_ban: res.data.gia_ban || 0,
           hinh_anh: res.data.hinh_anh || "",
           id_danh_muc: res.data.id_danh_muc || "",
+          noi_dung: res.data.noi_dung || "",
           roms: res.data.roms || [],
           mausacs: res.data.mausacs || [],
         });
@@ -134,6 +136,18 @@ export const ProductAdd = () => {
           </select>
         </div>
       </div>
+      <div className="mb-6">
+        <label className="block font-semibold mb-1">
+          Mô tả chi tiết sản phẩm
+        </label>
+        <textarea
+          rows={5}
+          value={product.noi_dung}
+          onChange={(e) => setProduct({ ...product, noi_dung: e.target.value })}
+          className="border rounded p-3 w-full resize-none"
+          placeholder="Nhập mô tả chi tiết sản phẩm..."
+        />
+      </div>
 
       {/* ROM Section */}
       <h2 className="text-xl font-bold mb-2">Danh sách ROM</h2>
@@ -162,6 +176,7 @@ export const ProductAdd = () => {
                   <option value="256gb">256gb</option>
                   <option value="512gb">512gb</option>
                   <option value="1T">1T</option>
+                  <option value="2T">2T</option>
                 </select>
               </td>
               <td className="p-2 border">

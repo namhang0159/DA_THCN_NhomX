@@ -7,11 +7,21 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Home } from "./pages/home.jsx";
 import Login from "./pages/login.jsx";
 import { Statistical } from "./pages/statistical/statistical.jsx";
-import { Product } from "./pages/product.jsx";
+import { Product } from "./pages/product/product.jsx";
 import { OrderStatusChart } from "./pages/statistical/orders.jsx";
 import { Topproducts } from "./pages/statistical/top-products.jsx";
 import { ReviewStatistic } from "./pages/statistical/review.jsx";
-import { ProductAdd } from "./pages/modal.jsx";
+import { ProductAdd } from "./pages/product/modal.jsx";
+import { Info } from "./pages/product/info.jsx";
+import Orders from "./pages/orders/orders.jsx";
+import { InfoOrders } from "./pages/orders/info.jsx";
+import { Users } from "./pages/users/users.jsx";
+import { Category } from "./pages/category/category.jsx";
+import { EditCate } from "./pages/category/edit.jsx";
+import { AddCate } from "./pages/category/add.jsx";
+import { Tag } from "./pages/tag/tag.jsx";
+import { ListInfo } from "./pages/tag/listInfo.jsx";
+import { Feedback } from "./pages/feedback/feedback.jsx";
 
 const router = createBrowserRouter([
   {
@@ -49,6 +59,46 @@ const router = createBrowserRouter([
       {
         path: `/products/edit/:id`,
         element: <ProductAdd />,
+      },
+      {
+        path: `/products/info/:id`,
+        element: <Info />,
+      },
+      {
+        path: `/orders`,
+        element: <Orders />,
+      },
+      {
+        path: `/orders/info/:id`,
+        element: <InfoOrders />,
+      },
+      {
+        path: `/customers`,
+        element: <Users />,
+      },
+      {
+        path: `/category`,
+        element: <Category />,
+      },
+      {
+        path: `/categories/edit/:id`,
+        element: <EditCate />,
+      },
+      {
+        path: `/categories/add`,
+        element: <AddCate />,
+      },
+      {
+        path: `/tag`,
+        element: <Tag />,
+      },
+      {
+        path: `/tag/info/:id`,
+        element: <ListInfo />,
+      },
+      {
+        path: `/feedback`,
+        element: <Feedback />,
       },
     ],
   },

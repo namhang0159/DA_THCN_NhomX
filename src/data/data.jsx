@@ -20,13 +20,25 @@ export const dashboardMenu = [
   {
     title: "Đơn hàng",
     icon: <i className="fa-solid fa-clipboard-list"></i>,
-    path: "/order",
+    path: "/orders",
     section: "MENU",
   },
   {
-    title: "Phương thức thanh toán",
-    icon: <i className="fa-solid fa-cart-shopping"></i>,
-    path: "/payments",
+    title: "Danh mục",
+    icon: <i className="fa-solid fa-codepen"></i>,
+    path: "/category",
+    section: "MENU",
+  },
+  {
+    title: "Nhãn",
+    icon: <i className="fa-solid fa-tag"></i>,
+    path: "/tag",
+    section: "MENU",
+  },
+  {
+    title: "Đánh giá",
+    icon: <i className="fa-solid fa-comment"></i>,
+    path: "/feedback",
     section: "MENU",
   },
   {
