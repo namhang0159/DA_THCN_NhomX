@@ -13,6 +13,7 @@ export const Feedback = () => {
     try {
       const res = await getDanhGiaApi();
       setFeedbacks(res.data || []);
+      console.log(res);
     } catch (err) {
       console.error("Lỗi load đánh giá:", err);
     } finally {
@@ -82,10 +83,10 @@ export const Feedback = () => {
 
                       <td className="p-4 border">
                         <div className="font-medium">
-                          {item.user?.name || "Ẩn"}
+                          {item.User?.name || "Ẩn"}
                         </div>
                         <div className="text-xs text-gray-500">
-                          {item.user?.email}
+                          {item.User?.email}
                         </div>
                       </td>
 
