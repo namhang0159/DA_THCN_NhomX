@@ -1,3 +1,4 @@
+const { name } = require("ejs");
 const {
   loginAdminService,
   createAdminService,
@@ -19,6 +20,24 @@ const {
   getSanPhamByIdService,
   getAllSanPhamService,
   createSanPhamService,
+  getOrderAllervice,
+  updateOrderStatusService,
+  getOrderItemByIdService,
+  banUserService,
+  deleteUserService,
+  updateUserService,
+  addCateService,
+  deleteCateService,
+  updateCategoryService,
+  getTagService,
+  createTagService,
+  updateTagService,
+  deleteTagService,
+  removeTagFromProductService,
+  addTagToProductService,
+  getProductWithTagService,
+  banDanhGiaService,
+  getDanhGiaService,
 } = require("../services/adminService");
 const createAdmin = async (req, res) => {
   console.log("BODY:", req.body);
@@ -207,6 +226,136 @@ const deleteSanPhamController = async (req, res) => {
   }
   return res.status(500).json({ EC: 1, EM: "Xóa thất bại" });
 };
+const getAllOrderController = async (req, res) => {
+  const result = await getOrderAllervice();
+  return res.status(200).json(result);
+};
+const updateOrderStatus = async (req, res) => {
+  try {
+    const { id, status } = req.body;
+    const result = await updateOrderStatusService(id, status);
+    if (result) return res.status(200).json("Thành công");
+  } catch (error) {
+    return res.status(500).json({ EC: 1, EM: "Thất bại thất bại" });
+  }
+};
+const getOrderItemIdController = async (req, res) => {
+  const { id } = req.body;
+  const result = await getOrderItemByIdService(id);
+  if (result) {
+    return res.status(200).json(result);
+  }
+  return res.status(404).json({ EC: 1, EM: "Không tìm thấy sản phẩm" });
+};
+const updateUser = async (req, res) => {
+  const { id, data } = req.body;
+  const { name, email } = data;
+  const dataS = await updateUserService(id, name, email);
+  return res.status(200).json(dataS);
+};
+
+const deleteUser = async (req, res) => {
+  const { id } = req.body;
+  const data = await deleteUserService(id);
+  return res.status(200).json(data);
+};
+
+const banUser = async (req, res) => {
+  const { id, isBan } = req.body;
+  const data = await banUserService(id, isBan);
+  return res.status(200).json(data);
+};
+const addCate = async (req, res) => {
+  const { ten_danh_muc, hinh_anh } = req.body;
+  const dataS = await addCateService(ten_danh_muc, hinh_anh);
+  return res.status(200).json(dataS);
+};
+const deleteCate = async (req, res) => {
+  const { id } = req.body;
+  const dataS = await deleteCateService(id);
+  return res.status(200).json(dataS);
+};
+const updateCate = async (req, res) => {
+  const { id, ten_danh_muc, hinh_anh } = req.body;
+  const dataS = await updateCategoryService(id, ten_danh_muc, hinh_anh);
+  return res.status(200).json(dataS);
+};
+const getTag = async (req, res) => {
+  try {
+    const data = await getTagService();
+    return res.status(200).json(data);
+  } catch (error) {
+    return res.status(500).json({ message: "Lỗi server" });
+  }
+};
+const createTag = async (req, res) => {
+  try {
+    const { ten_tag } = req.body;
+
+    const data = await createTagService(ten_tag);
+    return res.status(200).json(data);
+  } catch (error) {
+    return res.status(500).json({ message: "Lỗi server" });
+  }
+};
+const updateTag = async (req, res) => {
+  try {
+    const { id, ten_tag } = req.body;
+
+    const data = await updateTagService(id, ten_tag);
+    return res.status(200).json(data);
+  } catch (error) {
+    return res.status(500).json({ message: "Lỗi server" });
+  }
+};
+const deleteTag = async (req, res) => {
+  try {
+    const { id } = req.body;
+
+    const data = await deleteTagService(id);
+    return res.status(200).json(data);
+  } catch (error) {
+    return res.status(500).json({ message: "Lỗi server" });
+  }
+};
+const addTagProduct = async (req, res) => {
+  const { id_sanpham, id_tag } = req.body;
+  await addTagToProductService(id_sanpham, id_tag);
+  res.json({ message: "Thêm tag thành công" });
+};
+const deleteTagProduct = async (req, res) => {
+  const { id_sanpham, id_tag } = req.body;
+  await removeTagFromProductService(id_sanpham, id_tag);
+  res.json({ message: "Thêm tag thành công" });
+};
+const getTagProduct = async (req, res) => {
+  try {
+    const { id_tag } = req.body;
+    const data = await getProductWithTagService(id_tag);
+    return res.status(200).json(data);
+  } catch (error) {
+    return res.status(500).json({ message: "Lỗi server" });
+  }
+};
+const getDanhGia = async (req, res) => {
+  const data = await getDanhGiaService();
+  return res.status(200).json(data);
+};
+const banDanhGia = async (req, res) => {
+  const { id, is_ban } = req.body;
+
+  if (!id) {
+    return res.status(400).json({
+      message: "Thiếu id đánh giá",
+    });
+  }
+
+  const result = await banDanhGiaService(id, is_ban);
+
+  return res.status(200).json({
+    success: result,
+  });
+};
 
 module.exports = {
   loginAdmin,
@@ -230,4 +379,22 @@ module.exports = {
   getSanPhamByIdController,
   updateSanPhamController,
   deleteSanPhamController,
+  getAllOrderController,
+  updateOrderStatus,
+  getOrderItemIdController,
+  updateUser,
+  deleteUser,
+  banUser,
+  addCate,
+  deleteCate,
+  updateCate,
+  getTag,
+  createTag,
+  deleteTag,
+  updateTag,
+  addTagProduct,
+  deleteTagProduct,
+  getTagProduct,
+  getDanhGia,
+  banDanhGia,
 };

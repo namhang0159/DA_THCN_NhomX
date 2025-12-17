@@ -53,6 +53,24 @@ const {
   deleteSanPhamController,
   getAllSanPhamController,
   getSanPhamByIdController,
+  getAllOrderController,
+  updateOrderStatus,
+  getOrderItemIdController,
+  updateUser,
+  deleteUser,
+  banUser,
+  updateCate,
+  deleteCate,
+  addCate,
+  getTag,
+  createTag,
+  updateTag,
+  deleteTag,
+  addTagProduct,
+  deleteTagProduct,
+  getTagProduct,
+  getDanhGia,
+  banDanhGia,
 } = require("../controllers/adminController");
 const authAdmin = require("../middleware/authAdmiin");
 const { uploadDanhGia } = require("../helper/uploadDanhgia");
@@ -118,4 +136,22 @@ routerAPI.post("/product", getSanPhamByIdController);
 routerAPI.post("/createproduct", createSanPhamController);
 routerAPI.post("/updateProduct", updateSanPhamController);
 routerAPI.post("/deleteProduct", deleteSanPhamController);
+routerAPI.get("/orderAll", getAllOrderController);
+routerAPI.post("/updateStatusOrder", updateOrderStatus);
+routerAPI.post("/orderIt", getOrderItemIdController);
+routerAPI.post("/updateUser", updateUser);
+routerAPI.post("/deleteUser", deleteUser);
+routerAPI.post("/banUser", banUser);
+routerAPI.post("/createCate", addCate);
+routerAPI.post("/updateCate", updateCate);
+routerAPI.post("/deleteCate", deleteCate);
+routerAPI.get("/getTag", getTag);
+routerAPI.post("/createTag", createTag);
+routerAPI.post("/updateTag", updateTag);
+routerAPI.post("/deleteTag", deleteTag);
+routerAPI.post("/createTagPro", addTagProduct);
+routerAPI.post("/getTagPro", getTagProduct);
+routerAPI.post("/deleteTagPro", deleteTagProduct);
+routerAPI.get("/getDanhGia", getDanhGia);
+routerAPI.post("/banDanhGia", banDanhGia);
 module.exports = routerAPI;

@@ -14,6 +14,10 @@ const User = sequelize.define("User", {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  isBan: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0, // 0 = hoạt động, 1 = BAN
+  },
 });
 
 module.exports = User;
