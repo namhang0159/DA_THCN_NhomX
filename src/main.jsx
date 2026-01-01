@@ -22,6 +22,7 @@ import { AddCate } from "./pages/category/add.jsx";
 import { Tag } from "./pages/tag/tag.jsx";
 import { ListInfo } from "./pages/tag/listInfo.jsx";
 import { Feedback } from "./pages/feedback/feedback.jsx";
+import { Blog } from "./pages/Blog.jsx";
 
 const router = createBrowserRouter([
   {
@@ -99,6 +100,10 @@ const router = createBrowserRouter([
       {
         path: `/feedback`,
         element: <Feedback />,
+      },
+      {
+        path: `/blog`,
+        element: <Blog />,
       },
     ],
   },

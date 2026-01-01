@@ -86,7 +86,15 @@ export const Product = () => {
 
                     <td className="p-4 border">
                       <img
-                        src={item.hinh_anh}
+                        src={
+                          item.hinh_anh?.startsWith("http")
+                            ? item.hinh_anh
+                            : item.hinh_anh
+                            ? `${import.meta.env.VITE_BACKEND_URL}${
+                                item.hinh_anh
+                              }`
+                            : ""
+                        }
                         alt={item.tieu_de}
                         className="w-16 h-16 object-cover rounded-xl shadow"
                       />

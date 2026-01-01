@@ -2,23 +2,27 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   addSanPhamAPI,
-  updateSanPhamAPI,
   getDanhMucApi,
   getSanphamRomMauApi,
 } from "../../util/api";
+import axios from "../../util/api.customize";
 
 export const ProductAdd = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
+  const [imageType, setImageType] = useState("url"); // "url" | "file"
+
   const [product, setProduct] = useState({
     tieu_de: "",
     gia_ban: 0,
     hinh_anh: "",
-    id_danh_muc: "",
+    id_danh_muc: 0,
     noi_dung: "",
     roms: [],
     mausacs: [],
+    kho: [],
+    imageFile: null,
   });
 
   useEffect(() => {
@@ -36,16 +40,27 @@ export const ProductAdd = () => {
   useEffect(() => {
     if (id) {
       getSanphamRomMauApi(id).then((res) => {
+        const roms = res.data.roms || [];
+        const mausacs = res.data.mausacs || [];
+        const khoRaw = res.data.kho || [];
+
+        // 🔥 map id_rom + id_mausac → romIndex + mauIndex
+        const khoMapped = khoRaw.map((k) => ({
+          romIndex: roms.findIndex((r) => r.id === k.id_rom),
+          mauIndex: mausacs.findIndex((m) => m.id === k.id_mausac),
+          so_luong: k.so_luong,
+        }));
+
         setProduct({
           tieu_de: res.data.tieu_de || "",
           gia_ban: res.data.gia_ban || 0,
           hinh_anh: res.data.hinh_anh || "",
           id_danh_muc: res.data.id_danh_muc || "",
           noi_dung: res.data.noi_dung || "",
-          roms: res.data.roms || [],
-          mausacs: res.data.mausacs || [],
+          roms,
+          mausacs,
+          kho: khoMapped,
         });
-        console.log(res.data);
       });
     }
   }, [id]);
@@ -60,20 +75,54 @@ export const ProductAdd = () => {
   const handleAddMau = () => {
     setProduct({
       ...product,
-      mausacs: [...product.mausacs, { ten_mau: "", hinh_anh: "" }],
+      mausacs: [
+        ...product.mausacs,
+        {
+          ten_mau: "",
+          hinh_anh: "",
+          imageFile: null, // FILE
+          imageType: "url",
+        },
+      ],
     });
   };
 
   const handleSubmit = async () => {
-    if (id) {
-      console.log(id);
-      console.log(product);
+    const formData = new FormData();
 
-      const res = await updateSanPhamAPI(id, product);
-      console.log(res);
+    formData.append("tieu_de", product.tieu_de);
+    formData.append("gia_ban", product.gia_ban);
+    formData.append("id_danh_muc", product.id_danh_muc);
+    formData.append("noi_dung", product.noi_dung);
+    formData.append("roms", JSON.stringify(product.roms));
+    formData.append("kho", JSON.stringify(product.kho));
+
+    if (imageType === "file" && product.imageFile) {
+      formData.append("image", product.imageFile);
     } else {
-      await addSanPhamAPI(product);
+      formData.append("hinh_anh", product.hinh_anh);
     }
+
+    product.mausacs.forEach((mau, index) => {
+      formData.append(`mausacs[${index}][ten_mau]`, mau.ten_mau);
+
+      if (mau.imageType === "file" && mau.imageFile) {
+        formData.append(`mausacs[${index}][image]`, mau.imageFile);
+      } else {
+        formData.append(`mausacs[${index}][hinh_anh]`, mau.hinh_anh);
+      }
+    });
+
+    if (id) {
+      formData.append("id", id);
+      await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/v1/api/updateProduct`,
+        formData
+      );
+    } else {
+      await addSanPhamAPI(formData);
+    }
+
     navigate("/product");
   };
 
@@ -102,28 +151,68 @@ export const ProductAdd = () => {
             type="number"
             value={product.gia_ban}
             onChange={(e) =>
-              setProduct({ ...product, gia_ban: e.target.value })
+              setProduct({ ...product, gia_ban: Number(e.target.value) })
             }
             className="border rounded p-2 w-full"
           />
         </div>
         <div>
           <label className="block font-semibold mb-1">Hình ảnh</label>
-          <input
-            type="text"
-            value={product.hinh_anh}
-            onChange={(e) =>
-              setProduct({ ...product, hinh_anh: e.target.value })
-            }
-            className="border rounded p-2 w-full"
-          />
+
+          {/* Chọn kiểu ảnh */}
+          <div className="flex gap-4 mb-2">
+            <label className="flex items-center gap-1">
+              <input
+                type="radio"
+                value="url"
+                checked={imageType === "url"}
+                onChange={() => setImageType("url")}
+              />
+              URL
+            </label>
+            <label className="flex items-center gap-1">
+              <input
+                type="radio"
+                value="file"
+                checked={imageType === "file"}
+                onChange={() => setImageType("file")}
+              />
+              Upload file
+            </label>
+          </div>
+
+          {/* Nhập URL */}
+          {imageType === "url" && (
+            <input
+              type="text"
+              placeholder="https://example.com/image.jpg"
+              value={product.hinh_anh}
+              onChange={(e) =>
+                setProduct({ ...product, hinh_anh: e.target.value })
+              }
+              className="border rounded p-2 w-full"
+            />
+          )}
+
+          {/* Upload file */}
+          {imageType === "file" && (
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) =>
+                setProduct({ ...product, imageFile: e.target.files[0] })
+              }
+              className="border rounded p-2 w-full"
+            />
+          )}
         </div>
+
         <div>
           <label className="block font-semibold mb-1">Danh mục</label>
           <select
             value={product.id_danh_muc}
             onChange={(e) =>
-              setProduct({ ...product, id_danh_muc: e.target.value })
+              setProduct({ ...product, id_danh_muc: Number(e.target.value) })
             }
             className="border rounded p-2 w-full"
           >
@@ -226,17 +315,66 @@ export const ProductAdd = () => {
                   className="border rounded p-1 w-full"
                 />
               </td>
-              <td className="p-2 border">
-                <input
-                  type="text"
-                  value={mau.hinh_anh}
-                  onChange={(e) => {
-                    const newMausacs = [...product.mausacs];
-                    newMausacs[idx].hinh_anh = e.target.value;
-                    setProduct({ ...product, mausacs: newMausacs });
-                  }}
-                  className="border rounded p-1 w-full"
-                />
+              <td className="p-2 border space-y-2">
+                {/* Chọn kiểu ảnh */}
+                <div className="flex gap-3 text-sm">
+                  <label className="flex items-center gap-1">
+                    <input
+                      type="radio"
+                      name={`mau-image-${idx}`}
+                      checked={mau.imageType === "url"}
+                      onChange={() => {
+                        const newMausacs = [...product.mausacs];
+                        newMausacs[idx].imageType = "url";
+                        setProduct({ ...product, mausacs: newMausacs });
+                      }}
+                    />
+                    URL
+                  </label>
+
+                  <label className="flex items-center gap-1">
+                    <input
+                      type="radio"
+                      checked={mau.imageType === "file"}
+                      name={`mau-image-${idx}`}
+                      onChange={() => {
+                        const newMausacs = [...product.mausacs];
+                        newMausacs[idx].imageType = "file";
+                        setProduct({ ...product, mausacs: newMausacs });
+                      }}
+                    />
+                    File
+                  </label>
+                </div>
+
+                {/* Nhập URL */}
+                {mau.imageType === "url" && (
+                  <input
+                    type="text"
+                    placeholder="https://..."
+                    value={mau.hinh_anh}
+                    onChange={(e) => {
+                      const newMausacs = [...product.mausacs];
+                      newMausacs[idx].hinh_anh = e.target.value;
+                      setProduct({ ...product, mausacs: newMausacs });
+                    }}
+                    className="border rounded p-1 w-full"
+                  />
+                )}
+
+                {/* Upload file */}
+                {mau.imageType === "file" && (
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const newMausacs = [...product.mausacs];
+                      newMausacs[idx].imageFile = e.target.files[0];
+                      setProduct({ ...product, mausacs: newMausacs });
+                    }}
+                    className="border rounded p-1 w-full"
+                  />
+                )}
               </td>
             </tr>
           ))}
@@ -248,6 +386,65 @@ export const ProductAdd = () => {
       >
         + Thêm màu
       </button>
+      {/* KHO SẢN PHẨM */}
+      <h2 className="text-xl font-bold mb-2">Kho sản phẩm</h2>
+
+      {product.roms.length === 0 || product.mausacs.length === 0 ? (
+        <p className="text-gray-500 italic mb-6">
+          Vui lòng thêm ROM và Màu sắc để nhập kho
+        </p>
+      ) : (
+        <table className="w-full border mb-6">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="p-2 border">ROM</th>
+              <th className="p-2 border">Màu</th>
+              <th className="p-2 border">Số lượng</th>
+            </tr>
+          </thead>
+          <tbody>
+            {product.roms.map((rom, rIdx) =>
+              product.mausacs.map((mau, mIdx) => {
+                const khoItem = product.kho.find(
+                  (k) => k.romIndex === rIdx && k.mauIndex === mIdx
+                ) || {
+                  romIndex: rIdx,
+                  mauIndex: mIdx,
+                  so_luong: 0,
+                };
+
+                return (
+                  <tr key={`${rIdx}-${mIdx}`}>
+                    <td className="p-2 border">{rom.rom}</td>
+                    <td className="p-2 border">{mau.ten_mau}</td>
+                    <td className="p-2 border">
+                      <input
+                        type="number"
+                        min={0}
+                        value={khoItem.so_luong}
+                        onChange={(e) => {
+                          const newKho = product.kho.filter(
+                            (k) => !(k.romIndex === rIdx && k.mauIndex === mIdx)
+                          );
+
+                          newKho.push({
+                            romIndex: rIdx,
+                            mauIndex: mIdx,
+                            so_luong: Number(e.target.value),
+                          });
+
+                          setProduct({ ...product, kho: newKho });
+                        }}
+                        className="border rounded p-1 w-full"
+                      />
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      )}
 
       {/* Submit */}
       <div className="text-center">

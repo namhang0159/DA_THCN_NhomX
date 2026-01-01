@@ -201,6 +201,25 @@ const banDanhGiaApi = (id, is_ban) => {
   const dataGui = { id, is_ban };
   return axios.post(URL_API, dataGui);
 };
+const getBlogsApi = () => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/read`;
+  return axios.get(URL_API);
+};
+
+const createBlogApi = (data) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/create`;
+  return axios.post(URL_API, data);
+};
+
+const updateBlogApi = (id, data) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/update/${id}`;
+  return axios.put(URL_API, data);
+};
+
+const deleteBlogApi = (id) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/delete/${id}`;
+  return axios.delete(URL_API);
+};
 export {
   LoginApi,
   fetchMeApi,
@@ -243,4 +262,8 @@ export {
   deleteTagProAPI,
   getDanhGiaApi,
   banDanhGiaApi,
+  getBlogsApi,
+  createBlogApi,
+  updateBlogApi,
+  deleteBlogApi,
 };

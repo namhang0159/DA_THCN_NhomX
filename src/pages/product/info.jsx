@@ -11,6 +11,7 @@ export const Info = () => {
   useEffect(() => {
     if (id) {
       getSanphamRomMauApi(id).then((res) => {
+        console.log(res);
         setProduct(res.data);
       });
     }
@@ -58,7 +59,13 @@ export const Info = () => {
         {/* Image */}
         <div className="col-span-1 bg-white rounded-xl shadow p-4 flex flex-col items-center">
           <img
-            src={product.hinh_anh}
+            src={
+              product.hinh_anh?.startsWith("http")
+                ? product.hinh_anh
+                : product.hinh_anh
+                ? `${import.meta.env.VITE_BACKEND_URL}${product.hinh_anh}`
+                : ""
+            }
             alt={product.tieu_de}
             className="w-full h-64 object-contain rounded"
           />
@@ -131,7 +138,13 @@ export const Info = () => {
                 className="bg-white rounded-xl shadow hover:shadow-lg transition p-3"
               >
                 <img
-                  src={mau.hinh_anh}
+                  src={
+                    mau.hinh_anh?.startsWith("http")
+                      ? mau.hinh_anh
+                      : mau.hinh_anh
+                      ? `${import.meta.env.VITE_BACKEND_URL}${mau.hinh_anh}`
+                      : ""
+                  }
                   alt={mau.ten_mau}
                   className="w-full h-36 object-cover rounded-lg"
                 />
@@ -144,6 +157,53 @@ export const Info = () => {
             <p className="text-gray-500">Không có màu sắc</p>
           )}
         </div>
+      </Section>
+      {/* Kho sản phẩm */}
+      <Section title="Tồn kho theo phiên bản">
+        <table className="w-full border rounded-lg overflow-hidden">
+          <thead className="bg-gray-100 text-gray-700">
+            <tr>
+              <th className="p-3 border">ROM</th>
+              <th className="p-3 border">Màu sắc</th>
+              <th className="p-3 border">Số lượng</th>
+              <th className="p-3 border">Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody>
+            {product.kho && product.kho.length > 0 ? (
+              product.kho.map((k) => (
+                <tr key={k.id} className="hover:bg-gray-50">
+                  <td className="p-3 border text-center font-semibold">
+                    {k.rom?.rom?.toUpperCase()}
+                  </td>
+                  <td className="p-3 border text-center">
+                    {k.mausac?.ten_mau}
+                  </td>
+                  <td className="p-3 border text-center font-bold">
+                    {k.so_luong}
+                  </td>
+                  <td className="p-3 border text-center">
+                    {k.trang_thai === 1 ? (
+                      <span className="text-green-600 font-semibold">
+                        Còn hàng
+                      </span>
+                    ) : (
+                      <span className="text-red-600 font-semibold">
+                        Hết hàng
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="4" className="text-center p-4 text-gray-500">
+                  Chưa có dữ liệu kho
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </Section>
     </div>
   );

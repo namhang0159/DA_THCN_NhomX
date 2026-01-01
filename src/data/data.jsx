@@ -42,6 +42,12 @@ export const dashboardMenu = [
     section: "MENU",
   },
   {
+    title: "Blog",
+    icon: <i className="fa-solid fa-comment"></i>,
+    path: "/blog",
+    section: "MENU",
+  },
+  {
     title: "Thống kê",
     icon: <i className="fa-solid fa-dashboard"></i>,
     path: "/statistical",
