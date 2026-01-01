@@ -25,6 +25,7 @@ function App() {
   useEffect(() => {
     const fecthSanPham = async () => {
       const res = await getSanPhamHotApi();
+      console.log(res);
       const data = res.data;
       setSanPhamhot(data);
     };
@@ -39,11 +40,14 @@ function App() {
     fecthSanPhamBanChay();
   }, []);
   return (
-    <>
+    <div className="bg-gray-100 min-h-screen">
       <Banner />
-      <ListSale title={"Nổi Bật"} data={sanphamhot}></ListSale>
-      <Content title={"Bán chạy"} data={sanphambanchay}></Content>
-    </>
+
+      <div className="max-w-7xl mx-auto px-4">
+        <ListSale title="Sản phẩm nổi bật" data={sanphamhot} />
+        <Content title="Bán chạy" data={sanphambanchay} />
+      </div>
+    </div>
   );
 }
 

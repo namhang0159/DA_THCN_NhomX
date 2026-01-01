@@ -24,15 +24,16 @@ export const ListSale = ({ title, data }) => {
 
   return (
     <div className="p-6 w-full">
-      <div className="flex justify-between items-center flex-wrap gap-2">
-        <h1 className="text-black uppercase text-xl font-bold p-4">{title}</h1>
+      <div className="flex justify-between items-end mb-6">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
+        </div>
+
         <button
-          className="text-black rounded-2xl p-4 hover:bg-gray-200 transition"
-          onClick={() => {
-            navigate("/pageall");
-          }}
+          onClick={() => navigate("/pageall")}
+          className="text-sm font-medium text-blue-600 hover:underline"
         >
-          Xem tất cả
+          Xem tất cả →
         </button>
       </div>
 
@@ -53,24 +54,31 @@ export const ListSale = ({ title, data }) => {
                 onClick={() => navigate(`/pageSP/${item.id}`)}
               >
                 <img
-                  src={item.hinh_anh}
-                  alt={item.tieu_de}
-                  className="w-full h-[220px] object-contain mb-3"
+                  src={
+                    item.hinh_anh?.startsWith("http")
+                      ? item.hinh_anh
+                      : item.hinh_anh
+                      ? `${import.meta.env.VITE_BACKEND_URL}${item.hinh_anh}`
+                      : ""
+                  }
+                  className="h-[200px] w-full object-contain mb-4"
                 />
-                <p className="text-lg font-semibold text-gray-800 text-center mb-1">
+
+                <h3 className="font-semibold text-gray-900 line-clamp-2 mb-1">
                   {item.tieu_de}
-                </p>
-                <p className="text-red-600 text-xl font-bold mb-2">
+                </h3>
+
+                <p className="text-red-600 font-bold text-lg mb-2">
                   {Number(item.gia_ban).toLocaleString("vi-VN")} đ
                 </p>
-                <div className="bg-gray-100 w-full text-sm text-gray-600 p-2 rounded-xl text-center">
+
+                <div className="text-xs text-gray-500 bg-gray-100 rounded-lg p-2 line-clamp-2">
                   {item.noi_dung}
                 </div>
               </div>
             </div>
           ))}
       </Carousel>
-      
     </div>
   );
 };

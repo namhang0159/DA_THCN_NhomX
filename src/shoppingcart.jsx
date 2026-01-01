@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   deleteGHApi,
   getGioHangApi,
   getMauSacApi,
   getMeApi,
   getRomApi,
-  getSanPhamApi,
+  getSanphamRomMauApi,
   updateGioHangApi,
   updateMauGHApi,
   updateRomGHApi,
@@ -13,296 +13,376 @@ import {
 import { useNavigate } from "react-router-dom";
 
 const ShoppingCard = () => {
+  const navigate = useNavigate();
+
   const [giohang, setGiohang] = useState([]);
-  const [id, setId] = useState();
   const [sanpham, setSanPham] = useState([]);
-  const [selectedItems, setSelectedItems] = useState([]);
   const [mau, setMau] = useState([]);
   const [rom, setRom] = useState([]);
-  const navigate = useNavigate();
-  const [isEditing, setIsEditing] = useState(false);
+  const [idUser, setIdUser] = useState(null);
+  const [selectedItems, setSelectedItems] = useState([]);
+
+  /* ================= FETCH DATA ================= */
 
   useEffect(() => {
-    const fecthMe = async () => {
+    const fetchMe = async () => {
       const token = localStorage.getItem("access_token");
       if (!token) return;
       const res = await getMeApi();
-      setId(res.data.id);
+      setIdUser(res.data.id);
     };
-    fecthMe();
+    fetchMe();
   }, []);
 
   useEffect(() => {
-    if (!id) return;
+    if (!idUser) return;
     const fetchGioHang = async () => {
       const res = await getGioHangApi();
-      const filter = Array.isArray(res.data)
-        ? res.data.filter((item) => item.id_user === Number(id))
+      const data = Array.isArray(res.data)
+        ? res.data.filter((i) => i.id_user === Number(idUser))
         : [];
-      setGiohang(filter);
+      setGiohang(data);
     };
     fetchGioHang();
-  }, [id]);
+  }, [idUser]);
 
   useEffect(() => {
     if (!giohang.length) return;
     const fetchSanPham = async () => {
-      const res = await getSanPhamApi();
-      const sanphamIds = giohang.map((g) => g.id_sanpham);
-      const filter = Array.isArray(res.data)
-        ? res.data.filter((item) => sanphamIds.includes(item.id))
-        : [];
-      setSanPham(filter);
+      const res = await getSanphamRomMauApi();
+      console.log("API REP:", res);
+      const ids = giohang.map((g) => g.id_sanpham);
+      setSanPham(res.data.filter((s) => ids.includes(s.id)));
     };
     fetchSanPham();
   }, [giohang]);
 
   useEffect(() => {
-    const fecthMau = async () => {
-      const res = await getMauSacApi();
-      setMau(res.data);
-    };
-    fecthMau();
-  }, []);
-  useEffect(() => {
-    const fetchRom = async () => {
-      const res = await getRomApi();
-      console.log(res.data);
-      setRom(res.data);
-    };
-    fetchRom();
+    getMauSacApi().then((res) => setMau(res.data));
+    getRomApi().then((res) => setRom(res.data));
   }, []);
 
-  const updateSoluong = async (idGioHang, soluong) => {
-    try {
-      const res = await updateGioHangApi(idGioHang, soluong);
-      if (res) {
-        const reload = await getGioHangApi();
-        setGiohang(reload.data);
-      }
-    } catch (err) {
-      console.error("Lỗi:", err);
-    }
-  };
+  /* ================= HANDLER ================= */
 
-  const toggleSelect = (gh) => {
-    const exists = selectedItems.find((s) => s.id === gh.id);
-    const mauItem = mau.find((m) => m.id === gh.id_mau);
-    const ten_mau = mauItem ? mauItem.ten_mau : "";
-    if (exists) {
-      setSelectedItems(selectedItems.filter((s) => s.id !== gh.id));
-    } else {
-      setSelectedItems([
-        ...selectedItems,
-        {
-          id: gh.id,
-          id_sanpham: gh.id_sanpham,
-          soluong: gh.soluong,
-          ten_mau,
-          id_rom: gh.id_rom,
-        },
-      ]);
-    }
-  };
-
-  const setAll = () => {
-    const allItems = giohang.map((item) => ({
-      id: item.id,
-      id_sanpham: item.id_sanpham,
-      soluong: item.soluong,
-      id_mau: item.id_mau,
-      id_rom: item.id_rom,
-    }));
-    setSelectedItems(allItems);
-  };
-
-  const handleDatNgay = () => {
-    if (selectedItems.length === 0) {
-      alert("Vui lòng chọn sản phẩm để đặt!");
-      return;
-    }
-    localStorage.setItem("checkout_items", JSON.stringify(selectedItems));
-    navigate("/payment");
+  const updateSoluong = async (id, soluong) => {
+    await updateGioHangApi(id, soluong);
+    const reload = await getGioHangApi();
+    setGiohang(reload.data.filter((i) => i.id_user === idUser));
   };
 
   const updateMauGH = async (id, id_mau) => {
-    try {
-      const res = await updateMauGHApi(id, id_mau);
-      if (res) {
-        const reload = await getGioHangApi();
-        setGiohang(reload.data);
-      }
-    } catch (error) {
-      console.error("Lỗi đổi màu:", error);
-    }
+    await updateMauGHApi(id, id_mau);
+    const reload = await getGioHangApi();
+    setGiohang(reload.data.filter((i) => i.id_user === idUser));
   };
+
   const updateRomGH = async (id, id_rom) => {
-    try {
-      const res = await updateRomGHApi(id, id_rom);
-      if (res) {
-        const reload = await getGioHangApi();
-        setGiohang(reload.data);
-      }
-    } catch (error) {
-      console.error("Lỗi đổi ROM:", error);
+    await updateRomGHApi(id, id_rom);
+    const reload = await getGioHangApi();
+    setGiohang(reload.data.filter((i) => i.id_user === idUser));
+  };
+
+  const deleteItem = async (id) => {
+    await deleteGHApi(id);
+    setGiohang((prev) => prev.filter((i) => i.id !== id));
+    setSelectedItems((prev) => prev.filter((itemId) => itemId !== id));
+  };
+
+  const toggleSelectItem = (id) => {
+    setSelectedItems((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedItems.length === giohang.length) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(giohang.map((gh) => gh.id));
     }
   };
 
-  const deleteItem = async (idGioHang) => {
-    try {
-      setGiohang((prev) => prev.filter((g) => g.id !== idGioHang));
-      const res = await deleteGHApi(idGioHang);
-      alert(res.data);
-    } catch (err) {
-      console.error("Lỗi khi xóa:", err);
+  /* ================= TÍNH TỔNG ================= */
+
+  const totalPrice = useMemo(() => {
+    return giohang
+      .filter((gh) => selectedItems.includes(gh.id))
+      .reduce((sum, gh) => {
+        const sp = sanpham.find((s) => s.id === gh.id_sanpham);
+        const r = rom.find((i) => i.id === gh.id_rom);
+        if (!sp) return sum;
+        return (
+          sum + (Number(sp.gia_ban) + Number(r?.gia_thaydoi || 0)) * gh.soluong
+        );
+      }, 0);
+  }, [giohang, sanpham, rom, selectedItems]);
+
+  const handleCheckout = () => {
+    const invalidItems = giohang.filter((gh) => {
+      if (!selectedItems.includes(gh.id)) return false;
+      const sp = sanpham.find((s) => s.id === gh.id_sanpham);
+      const khoItem = getKhoItem(sp, gh);
+      return (
+        !khoItem || khoItem.trang_thai === 0 || khoItem.so_luong < gh.soluong
+      );
+    });
+
+    if (invalidItems.length > 0) {
+      alert("Có sản phẩm trong giỏ đã hết hoặc không đủ số lượng");
+      return;
     }
+    if (!selectedItems.length) {
+      alert("Vui lòng chọn ít nhất 1 sản phẩm để thanh toán");
+      return;
+    }
+
+    const checkoutItems = giohang.filter((gh) => selectedItems.includes(gh.id));
+    localStorage.setItem("checkout_items", JSON.stringify(checkoutItems));
+    navigate("/payment");
   };
+  const getKhoItem = (sp, gh) => {
+    if (!sp?.kho) return null;
+    return sp.kho.find(
+      (k) => k.id_rom === gh.id_rom && k.id_mausac === gh.id_mau
+    );
+  };
+
+  /* ================= UI ================= */
+
   return (
-    <div className="max-w-5xl w-full mx-auto rounded-2xl shadow-xl bg-white p-4 md:p-6">
-      <h1 className="text-center text-2xl md:text-3xl font-semibold mb-6 text-gray-700">
-        🛒 Giỏ hàng của bạn
-      </h1>
+    <div className="bg-gray-100 min-h-screen py-10 px-4">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* ================= LEFT ================= */}
+        <div className="lg:col-span-8 flex flex-col gap-6">
+          <div className="pb-4 border-b border-gray-200 flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-black text-gray-900">
+                Shopping Cart
+              </h1>
+              <p className="text-gray-500">
+                {giohang.length} sản phẩm trong giỏ
+              </p>
+            </div>
 
-      <div className="flex justify-between items-center mb-4">
-        <button
-          onClick={setAll}
-          className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg text-sm md:text-base"
-        >
-          Chọn tất cả
-        </button>
+            {giohang.length > 0 && (
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selectedItems.length === giohang.length}
+                  onChange={toggleSelectAll}
+                  className="w-5 h-5 rounded"
+                />
+                <span className="text-sm font-medium">Chọn tất cả</span>
+              </label>
+            )}
+          </div>
 
-        <button
-          onClick={() => setIsEditing(!isEditing)}
-          className="bg-blue-500  text-white px-4 py-2 rounded-lg hover:bg-blue-400"
-        >
-          {isEditing ? "Hoàn tất" : "Chỉnh sửa"}
-        </button>
-      </div>
+          {giohang.length === 0 && (
+            <p className="text-center text-gray-500 mt-20">
+              Giỏ hàng của bạn đang trống
+            </p>
+          )}
 
-      <div className=" max-h-[70vh] overflow-y-auto pr-3">
-        {giohang.length > 0 ? (
-          giohang.map((gh, index) => {
+          {giohang.map((gh) => {
             const sp = sanpham.find((s) => s.id === gh.id_sanpham);
             if (!sp) return null;
-            const mauSac = mau.filter((it) => it.id_sanpham === sp.id);
-            const ROM = rom.filter((i) => i.id_sanpham === sp.id);
+
             const ROMI = rom.find((i) => i.id === gh.id_rom);
+            const mauSP = mau.filter((m) => m.id_sanpham === sp.id);
+            const romSP = rom.filter((r) => r.id_sanpham === sp.id);
+            const isSelected = selectedItems.includes(gh.id);
+            const khoItem = getKhoItem(sp, gh);
+
+            const hetHang =
+              !khoItem || khoItem.trang_thai === 0 || khoItem.so_luong === 0;
+
+            const khongDuSoLuong = khoItem && khoItem.so_luong < gh.soluong;
+
             return (
               <div
-                key={index}
-                onClick={() => toggleSelect(gh)}
-                className="relative bg-gray-50 rounded-xl shadow-sm hover:shadow-md transition m-4 p-4 flex items-center justify-between"
+                key={gh.id}
+                className={`flex gap-4 bg-white p-4 rounded-xl border transition ${
+                  isSelected
+                    ? "border-blue-500 shadow-md"
+                    : "border-gray-100 shadow-sm"
+                } hover:shadow-md`}
               >
-                <div
-                  className={`flex  md:flex-row  gap-4 flex-1 items-center transition-transform duration-300 ${
-                    isEditing ? "-translate-x-16" : ""
-                  }`}
-                >
-                  {/* Checkbox chọn sản phẩm */}
+                {/* Checkbox */}
+                <div className="flex pt-2 items-center">
                   <input
                     type="checkbox"
-                    checked={selectedItems.some((s) => s.id === gh.id)}
-                    onChange={() => toggleSelect(gh)}
-                    className="w-5 h-5 accent-red-500"
+                    checked={isSelected}
+                    disabled={hetHang || khongDuSoLuong}
+                    onChange={() => toggleSelectItem(gh.id)}
+                    className="w-5 h-5 cursor-pointer disabled:opacity-40"
                   />
-                  {/* Ảnh */}
-                  <img
-                    src={sp.hinh_anh}
-                    alt={sp.tieu_de}
-                    className="w-16 h-16 object-contain rounded-md"
-                  />
+                </div>
 
-                  {/* Thông tin */}
-                  <div className="flex-1 ml-4">
-                    <h3 className="font-medium text-gray-800">{sp.tieu_de}</h3>
-                    <p className="text-red-500 font-semibold">
-                      {Number(
-                        Number(sp.gia_ban) + Number(ROMI.gia_thaydoi)
+                {/* Image */}
+                <div className="shrink-0">
+                  <div className="bg-gray-100 rounded-lg w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center">
+                    <img
+                      src={
+                        sp.hinh_anh?.startsWith("http")
+                          ? sp.hinh_anh
+                          : sp.hinh_anh
+                          ? `${import.meta.env.VITE_BACKEND_URL}${sp.hinh_anh}`
+                          : ""
+                      }
+                      alt={sp.tieu_de}
+                      className="object-contain w-full h-full"
+                    />
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="flex flex-1 flex-col justify-between">
+                  <div className="flex justify-between items-start gap-4">
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900">
+                        {sp.tieu_de}
+                      </h3>
+                      <p className="text-green-600 text-sm font-medium mt-1">
+                        Còn hàng
+                      </p>
+                      {hetHang && (
+                        <p className="text-red-500 text-sm font-semibold">
+                          Hết hàng
+                        </p>
+                      )}
+
+                      {!hetHang && khongDuSoLuong && (
+                        <p className="text-orange-500 text-sm font-semibold">
+                          Chỉ còn {khoItem.so_luong} sản phẩm
+                        </p>
+                      )}
+
+                      <div className="flex gap-2 mt-2">
+                        <select
+                          value={gh.id_mau}
+                          onChange={(e) => updateMauGH(gh.id, e.target.value)}
+                          className="text-xs rounded-md bg-gray-100 px-2 py-1"
+                        >
+                          {mauSP.map((m) => (
+                            <option key={m.id} value={m.id}>
+                              {m.ten_mau}
+                            </option>
+                          ))}
+                        </select>
+
+                        <select
+                          value={gh.id_rom}
+                          onChange={(e) => updateRomGH(gh.id, e.target.value)}
+                          className="text-xs rounded-md bg-gray-100 px-2 py-1"
+                        >
+                          {romSP.map((r) => (
+                            <option key={r.id} value={r.id}>
+                              {r.rom}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <p className="text-lg font-bold text-gray-900">
+                      {(
+                        (Number(sp.gia_ban) + Number(ROMI?.gia_thaydoi || 0)) *
+                        gh.soluong
                       ).toLocaleString()}
                       ₫
                     </p>
                   </div>
-                  {/* Màu sắc */}
-                  <div className="flex-1 ml-4">
-                    <h3 className=" text-gray-800 font-bold">Màu sắc</h3>
-                    <select
-                      value={gh?.id_mau ?? ""}
-                      onChange={(e) => updateMauGH(gh.id, e.target.value)}
-                    >
-                      {mauSac.map((mItem, index) => (
-                        <option key={index} value={mItem.id}>
-                          {mItem.ten_mau}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  {/* ROM */}
-                  <div className="flex-1 ml-4">
-                    <h3 className=" text-gray-800 font-bold">Dung lượng</h3>
-                    <select
-                      value={gh?.id_rom ?? ""}
-                      onChange={(e) => updateRomGH(gh.id, e.target.value)}
-                    >
-                      {ROM.map((mItem, index) => (
-                        <option key={index} value={mItem.id}>
-                          {mItem.rom}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
 
-                  {/* Số lượng */}
-                  <div className="flex flex-col items-center gap-2">
-                    {/* Hiển thị số lượng */}
-                    <div className="text-gray-600 font-medium">
-                      SL: {gh?.soluong ?? 0}
-                    </div>
-
-                    {/* Nút tăng giảm */}
-                    <div className="flex items-center border rounded-lg overflow-hidden">
+                  <div className="flex items-center justify-between mt-4">
+                    {/* Quantity */}
+                    <div className="flex items-center border rounded-lg p-1">
                       <button
-                        className="px-3 py-1 bg-gray-200 hover:bg-gray-300"
                         onClick={() =>
                           updateSoluong(gh.id, Math.max(gh.soluong - 1, 1))
                         }
+                        className="w-8 h-8 hover:bg-gray-100 rounded"
                       >
-                        -
+                        −
                       </button>
+                      <span className="w-8 text-center text-sm font-medium">
+                        {gh.soluong}
+                      </span>
                       <button
-                        className="px-3 py-1 bg-gray-200 hover:bg-gray-300"
+                        disabled={khongDuSoLuong || hetHang}
                         onClick={() => updateSoluong(gh.id, gh.soluong + 1)}
+                        className="w-8 h-8 hover:bg-gray-100 rounded"
                       >
                         +
                       </button>
                     </div>
-                  </div>
-                  {isEditing && (
+
                     <button
                       onClick={() => deleteItem(gh.id)}
-                      className="absolute right-[-80px] md:h-[145%] h-full md:top-[-15px] -translate-y-0 bg-red-500 text-white md:px-6 px-2  md:rounded-r-xl  shadow hover:bg-red-400 transition"
+                      className="text-sm text-gray-400 hover:text-red-500"
                     >
-                      Xóa
+                      🗑 Xóa
                     </button>
-                  )}
+                  </div>
                 </div>
               </div>
             );
-          })
-        ) : (
-          <p className="text-center text-gray-500 mt-20">
-            Giỏ hàng của bạn đang trống
-          </p>
-        )}
-      </div>
+          })}
+        </div>
 
-      {/* Nút đặt ngay */}
-      <div className="flex justify-end mt-6">
-        <button
-          onClick={handleDatNgay}
-          className="bg-red-500 px-6 py-3 rounded-2xl hover:bg-red-400 text-white font-semibold shadow-lg text-sm md:text-base"
-        >
-          Đặt Ngay
-        </button>
+        {/* ================= RIGHT ================= */}
+        <div className="lg:col-span-4">
+          <div
+            className="sticky top-24 bg-white p-6 rounded-xl
+                          border border-gray-100 shadow-sm flex flex-col gap-6"
+          >
+            <h3 className="text-xl font-bold text-gray-900">Order Summary</h3>
+
+            <div className="flex justify-between text-sm text-gray-500">
+              <span>Đã chọn</span>
+              <span className="font-medium text-blue-600">
+                {selectedItems.length} sản phẩm
+              </span>
+            </div>
+
+            <div className="flex justify-between text-sm text-gray-500">
+              <span>Tạm tính</span>
+              <span className="font-medium text-gray-900">
+                {totalPrice.toLocaleString()}₫
+              </span>
+            </div>
+
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Vận chuyển</span>
+              <span className="text-green-600 font-medium">Miễn phí</span>
+            </div>
+
+            <div className="border-t pt-4 flex justify-between items-center">
+              <span className="text-lg font-bold">Tổng</span>
+              <span className="text-2xl font-black text-gray-900">
+                {totalPrice.toLocaleString()}₫
+              </span>
+            </div>
+
+            <button
+              onClick={handleCheckout}
+              disabled={selectedItems.length === 0}
+              className={`w-full font-bold py-3.5 rounded-lg shadow-lg transition ${
+                selectedItems.length === 0
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-500 text-white"
+              }`}
+            >
+              Thanh toán ({selectedItems.length})
+            </button>
+
+            <button
+              onClick={() => navigate("/")}
+              className="text-sm text-gray-500 hover:text-blue-600"
+            >
+              ← Tiếp tục mua sắm
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

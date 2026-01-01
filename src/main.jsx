@@ -17,6 +17,9 @@ import Orders from "./orders.jsx";
 import { Orderinfo } from "./orderinfo.jsx";
 import { Review } from "./pages/review.jsx";
 import { Allreview } from "./pages/allreview.jsx";
+import { Contact } from "./pages/contact.jsx";
+import { About } from "./pages/about.jsx";
+import { Profile } from "./pages/profile.jsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -73,6 +76,18 @@ const router = createBrowserRouter([
       {
         path: "/allreview",
         element: <Allreview />,
+      },
+      {
+        path: "/contact",
+        element: <Contact />,
+      },
+      {
+        path: "/about",
+        element: <About />,
+      },
+      {
+        path: "/profile",
+        element: <Profile />,
       },
     ],
   },

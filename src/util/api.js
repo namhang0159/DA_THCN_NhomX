@@ -178,6 +178,68 @@ const checkDanhGiaApi = (id_sanpham, id_order) => {
   };
   return axios.post(URL_API, data);
 };
+const getAddressByUserApi = (id_user) => {
+  if (!id_user) {
+    return Promise.reject(new Error("id_user không hợp lệ"));
+  }
+  const URL_API = `${
+    import.meta.env.VITE_BACKEND_URL
+  }/v1/api/address/${id_user}`;
+  return axios.get(URL_API);
+};
+
+const createAddressApi = (id_user, hoten, sdt, diachi, is_choose = 0) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/address`;
+  const data = {
+    id_user,
+    hoten,
+    sdt,
+    diachi,
+    is_choose,
+  };
+  return axios.post(URL_API, data);
+};
+
+const updateAddressApi = (id, hoten, sdt, diachi, is_choose = 0) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/address/${id}`;
+  const data = {
+    hoten,
+    sdt,
+    diachi,
+    is_choose,
+  };
+  return axios.put(URL_API, data);
+};
+
+const deleteAddressApi = (id) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/address/${id}`;
+  return axios.delete(URL_API);
+};
+
+const chooseAddressApi = (id) => {
+  const URL_API = `${
+    import.meta.env.VITE_BACKEND_URL
+  }/v1/api/address/choose/${id}`;
+  return axios.put(URL_API);
+};
+const getSanphamRomMauApi = (id) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/product`;
+  const data = { id };
+  return axios.post(URL_API, data);
+};
+const repayOrderApi = (id) => {
+  if (!id) {
+    return Promise.reject(new Error("id_order không hợp lệ"));
+  }
+
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/repay`;
+  const data = {
+    id,
+  };
+
+  return axios.post(URL_API, data);
+};
+
 export {
   createUserApi,
   loginUserApi,
@@ -204,4 +266,11 @@ export {
   getDanhGiaApi,
   checkDanhGiaApi,
   taoDanhGiaApi,
+  getAddressByUserApi,
+  createAddressApi,
+  updateAddressApi,
+  deleteAddressApi,
+  chooseAddressApi,
+  getSanphamRomMauApi,
+  repayOrderApi,
 };

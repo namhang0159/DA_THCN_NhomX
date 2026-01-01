@@ -6,16 +6,19 @@ export const Content = ({ title, data }) => {
 
   return (
     <div className="p-4 md:p-6 w-full">
-      {/* Header */}
-      <div className="flex justify-between items-center flex-wrap gap-2 mb-4">
-        <h1 className="text-black uppercase text-lg md:text-xl font-bold p-2">
-          {title}
-        </h1>
+      <div className="flex justify-between items-end mb-6">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
+          <p className="text-sm text-gray-500">
+            Sản phẩm được khách hàng yêu thích
+          </p>
+        </div>
+
         <button
           onClick={() => navigate("/pageall")}
-          className="text-sm md:text-base text-black rounded-2xl px-4 py-2 hover:bg-gray-200 transition"
+          className="text-sm font-medium text-blue-600 hover:underline"
         >
-          Xem tất cả
+          Xem tất cả →
         </button>
       </div>
 
@@ -28,22 +31,27 @@ export const Content = ({ title, data }) => {
               className="cursor-pointer"
               onClick={() => navigate(`/pageSP/${item.id}`)}
             >
-              <div className="flex flex-col items-center bg-white p-4 h-full rounded-2xl shadow-md hover:shadow-xl transition duration-300">
+              <div className="bg-white rounded-xl border border-gray-200 hover:border-blue-500 hover:shadow-lg transition p-4 h-full">
                 <img
-                  src={item.hinh_anh}
-                  alt={item.tieu_de}
-                  className="w-full h-[180px] sm:h-[220px] object-contain mb-3"
+                  src={
+                    item.hinh_anh?.startsWith("http")
+                      ? item.hinh_anh
+                      : item.hinh_anh
+                      ? `${import.meta.env.VITE_BACKEND_URL}${item.hinh_anh}`
+                      : ""
+                  }
+                  className="h-[200px] w-full object-contain mb-4"
                 />
 
-                <p className="text-base sm:text-lg font-semibold text-gray-800 text-center mb-1 line-clamp-2">
+                <h3 className="font-semibold text-gray-900 line-clamp-2 mb-1">
                   {item.tieu_de}
-                </p>
+                </h3>
 
-                <p className="text-red-600 text-lg sm:text-xl font-bold mb-2">
+                <p className="text-red-600 font-bold text-lg mb-2">
                   {Number(item.gia_ban).toLocaleString("vi-VN")} đ
                 </p>
 
-                <div className="bg-gray-100 w-full text-xs sm:text-sm text-gray-600 p-2 rounded-xl text-center line-clamp-2">
+                <div className="text-xs text-gray-500 bg-gray-100 rounded-lg p-2 line-clamp-2">
                   {item.noi_dung}
                 </div>
               </div>

@@ -2,146 +2,245 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   getMeApi,
-  getOrderItemApi,
   getOrdersApi,
+  getOrderItemApi,
   getSanPhamIDApi,
 } from "./util/api";
 
 const Orders = () => {
-  const [id, setId] = useState();
-  const [id_order, setId_order] = useState([]);
-  const [order, setOrder] = useState([]);
-  const [orderR, setOrderR] = useState([]);
-  const [sanpham, setSanpham] = useState([]);
+  const [userId, setUserId] = useState(null);
+  const [orders, setOrders] = useState([]);
+  const [orderItems, setOrderItems] = useState([]);
+  const [products, setProducts] = useState([]);
+
   const navigate = useNavigate();
+
+  /* ===================== GET USER ===================== */
   useEffect(() => {
-    const fecthMe = async () => {
+    const fetchMe = async () => {
       const token = localStorage.getItem("access_token");
       if (!token) return;
       const res = await getMeApi();
-      setId(res.data.id);
+      setUserId(res.data.id);
     };
-    fecthMe();
+    fetchMe();
   }, []);
+
+  /* ===================== GET ORDERS ===================== */
   useEffect(() => {
+    if (!userId) return;
     const fetchOrders = async () => {
-      if (id === undefined || id === null) return;
-      else {
-        const res = await getOrdersApi(id);
-        const data = res.data;
-        setOrderR(res.data);
-        setId_order(data.map((o) => o.id));
-        return;
-      }
+      const res = await getOrdersApi(userId);
+      setOrders(res.data);
     };
     fetchOrders();
-  }, [id]);
+  }, [userId]);
+
+  /* ===================== GET ORDER ITEMS ===================== */
   useEffect(() => {
-    const fetchOrders = async () => {
-      if (id_order.length === 0) return;
-      else {
-        const orderItem = [];
-        for (const ori of id_order) {
-          const res = await getOrderItemApi(ori);
-          const data = res.data;
+    if (orders.length === 0) return;
 
-          orderItem.push(...data);
-        }
-
-        setOrder(orderItem);
+    const fetchOrderItems = async () => {
+      const items = [];
+      for (const o of orders) {
+        const res = await getOrderItemApi(o.id);
+        items.push(...res.data);
       }
+      setOrderItems(items);
     };
-    fetchOrders();
-  }, [id_order]);
+
+    fetchOrderItems();
+  }, [orders]);
+
+  /* ===================== GET PRODUCTS ===================== */
   useEffect(() => {
+    if (orderItems.length === 0) return;
+
     const fetchProducts = async () => {
-      if (order.length === 0) return;
-
       const sp = [];
-      for (const o of order) {
-        try {
-          const res = await getSanPhamIDApi(o.id_sanpham);
+      for (const item of orderItems) {
+        if (!sp.find((x) => x.id === item.id_sanpham)) {
+          const res = await getSanPhamIDApi(item.id_sanpham);
           sp.push(res.data);
-        } catch (err) {
-          console.error("Lỗi khi fetch sản phẩm:", err);
         }
       }
-      console.log(sp);
-      setSanpham(sp);
+      setProducts(sp);
     };
 
     fetchProducts();
-  }, [order]);
+  }, [orderItems]);
+
+  const renderStatus = (status) => {
+    switch (status) {
+      case "Pending":
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
+            <span className="h-2 w-2 rounded-full bg-gray-500"></span>
+            Pending
+          </span>
+        );
+
+      case "Đã thanh toán - Chờ xác nhận":
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-700">
+            <span className="h-2 w-2 rounded-full bg-yellow-500"></span>
+            Đã thanh toán - Chờ xác nhận
+          </span>
+        );
+
+      case "Chờ nhận tại cửa hàng":
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
+            <span className="h-2 w-2 rounded-full bg-blue-500"></span>
+            Chờ nhận tại cửa hàng
+          </span>
+        );
+
+      case "Đang giao":
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-3 py-1 text-xs font-medium text-indigo-700">
+            <span className="h-2 w-2 rounded-full bg-indigo-500"></span>
+            Đang giao
+          </span>
+        );
+
+      case "Thành Công":
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+            <span className="h-2 w-2 rounded-full bg-green-500"></span>
+            Thành công
+          </span>
+        );
+
+      case "Đã hủy":
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700">
+            <span className="h-2 w-2 rounded-full bg-red-500"></span>
+            Đã hủy
+          </span>
+        );
+
+      case "Thất bại":
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full bg-red-200 px-3 py-1 text-xs font-medium text-red-800">
+            <span className="h-2 w-2 rounded-full bg-red-600"></span>
+            Thất bại
+          </span>
+        );
+
+      default:
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+            Không xác định
+          </span>
+        );
+    }
+  };
 
   return (
-    <div className="p-4">
-      {id_order.length > 0 ? (
-        id_order.map((oid) => {
-          const items = order.filter((o) => o.id_order === oid);
-          const ord = orderR.find((o) => o.id === oid);
-          const status = ord.status;
-          let maustatus = "";
-          if (status === "Thành Công") {
-            maustatus = "bg-green-100 text-green-600";
-          } else if (status === "Pending") {
-            maustatus = "bg-yellow-100 text-yellow-600";
-          } else {
-            maustatus = "bg-red-100 text-red-600";
-          }
-          return (
-            <div
-              key={oid}
-              onClick={() => {
-                navigate(`/orderinfo/${oid}`);
-              }}
-              className="mb-6 p-4 border rounded-xl bg-white shadow-md hover:shadow-xl transition"
-            >
-              {/* Thông tinn */}
-              <div className="flex justify-between items-center mb-3">
-                <h2 className="font-semibold text-lg">Đơn hàng #{oid}</h2>
-                <span className={`px-3 py-1 rounded-full text-sm ${maustatus}`}>
-                  {status}
-                </span>
-              </div>
+    <main className="px-4 py-8 md:px-10 lg:px-20 xl:px-40 bg-slate-100 min-h-screen">
+      <div className="mx-auto max-w-6xl space-y-6">
+        {/* ===================== TITLE ===================== */}
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
+            Order History
+          </h1>
+          <p className="mt-2 text-slate-600">
+            Track, return, or buy items again.
+          </p>
+        </div>
 
-              {/*  item */}
-              {items.map((item) => {
-                const sp = sanpham.find((s) => s.id === item.id_sanpham);
-                if (!sp) return null;
-                return (
-                  <div
-                    key={item.id}
-                    className="flex items-center gap-4 border-b py-2"
-                  >
-                    <img
-                      src={sp.hinh_anh}
-                      alt={sp.tieu_de}
-                      className="w-16 h-16 object-cover rounded"
-                    />
-                    <div className="flex-1">
-                      <h3 className="font-medium">{sp.tieu_de}</h3>
-                      <p className="text-gray-500 text-sm">
-                        Số lượng: {item.soluong}
-                      </p>
-                      <p className="text-gray-700 font-semibold">
-                        Giá: {sp.gia_ban.toLocaleString()}đ
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
+        {/* ===================== TABLE ===================== */}
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm text-slate-600">
+              <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+                <tr>
+                  <th className="px-6 py-4 font-semibold">Product</th>
+                  <th className="px-6 py-4 font-semibold">Order ID</th>
+                  <th className="px-6 py-4 font-semibold">Status</th>
+                  <th className="px-6 py-4 font-semibold">Total</th>
+                  <th className="px-6 py-4 font-semibold text-right">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
 
-              {/* Tổng  tiền */}
-              <div className="text-right mt-3 font-bold text-gray-800">
-                Tổng tiền: {ord.amount} đ
-              </div>
-            </div>
-          );
-        })
-      ) : (
-        <p className="text-center">Chưa có đơn hàng nào</p>
-      )}
-    </div>
+              <tbody className="divide-y divide-slate-200">
+                {orders.length === 0 && (
+                  <tr>
+                    <td colSpan="5" className="px-6 py-10 text-center">
+                      Chưa có đơn hàng nào
+                    </td>
+                  </tr>
+                )}
+
+                {orders.map((order) => {
+                  const items = orderItems.filter(
+                    (i) => i.id_order === order.id
+                  );
+
+                  const firstItem = items[0];
+                  const product = products.find(
+                    (p) => p.id === firstItem?.id_sanpham
+                  );
+
+                  return (
+                    <tr key={order.id} className="group hover:bg-slate-50">
+                      {/* PRODUCT */}
+                      <td className="px-6 py-4">
+                        {product && (
+                          <div className="flex items-center gap-4">
+                            <img
+                              src={product.hinh_anh}
+                              alt={product.tieu_de}
+                              className="h-12 w-12 rounded-lg object-cover bg-slate-100"
+                            />
+                            <div>
+                              <div className="font-medium text-slate-900">
+                                {product.tieu_de}
+                              </div>
+                              <div className="text-xs text-slate-500">
+                                Số SP: {items.length}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </td>
+
+                      {/* ORDER ID */}
+                      <td className="px-6 py-4 font-medium text-blue-600">
+                        #{order.id}
+                      </td>
+
+                      {/* STATUS */}
+                      <td className="px-6 py-4">
+                        {renderStatus(order.status)}
+                      </td>
+
+                      {/* TOTAL */}
+                      <td className="px-6 py-4 font-semibold text-slate-900">
+                        {order.amount.toLocaleString()} đ
+                      </td>
+
+                      {/* ACTION */}
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          onClick={() => navigate(`/orderinfo/${order.id}`)}
+                          className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                        >
+                          View Details
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
   );
 };
 

@@ -4,36 +4,16 @@ import { Carousel } from "react-responsive-carousel";
 
 export const Banner = () => {
   return (
-    <div className="w-[100%]">
-      <Carousel autoPlay infiniteLoop showThumbs={false} showDots={false}>
-        <div>
-          <img
-            src="./img/ip17.png"
-            alt="Ảnh 1"
-            className="w-full  object-cover rounded-xl"
-          />
+    <div className="bg-white">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="rounded-2xl overflow-hidden shadow-lg">
+          <Carousel autoPlay infiniteLoop showThumbs={false} showStatus={false}>
+            <img src="./img/ip17.png" className="h-[420px] object-cover" />
+            <img src="./img/ss.webp" className="h-[420px] object-cover" />
+            <img src="./img/oppo.webp" className="h-[420px] object-cover" />
+          </Carousel>
         </div>
-        <div>
-          <img
-            src="./img/ss.webp"
-            alt="Ảnh 2"
-            className="w-full  object-cover rounded-xl"
-          />
-        </div>
-        <div>
-          <img
-            src="./img/oppo.webp"
-            alt="Ảnh 3"
-            className="w-full  object-cover rounded-xl"
-          />
-        </div>
-        <div>
-          <img
-            src="./img/nubia.webp"
-            className="w-full  object-cover rounded-xl"
-          />
-        </div>
-      </Carousel>
+      </div>
     </div>
   );
 };
