@@ -14,6 +14,8 @@ const rom = require("../models/rom");
 const { where, DATE } = require("sequelize");
 const Danhgia = require("../models/danhgia");
 const { now } = require("sequelize/lib/utils");
+const ShippingAddress = require("../models/shippingAddress");
+const kho_sanpham = require("../models/sanpham_kho");
 
 require("dotenv").config();
 const createUserService = async (name, email, password) => {
@@ -38,46 +40,60 @@ const loginUserService = async (email, password) => {
   if (!password) {
     throw new Error("Password is required");
   }
-  try {
-    const user = await User.findOne({ where: { email: email } });
-    if (user) {
-      const isMatchPassword = await bcrypt.compare(password, user.password);
-      if (isMatchPassword) {
-        const payload = {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-        };
-        const access_token = jwt.sign(payload, process.env.JWT_SECRET, {
-          expiresIn: process.env.JWT_EXPIRE,
-        });
-        return {
-          EC: 0,
-          access_token,
 
-          user: {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-          },
-        };
-      } else {
-        return {
-          EC: 1,
-          EM: "Email hoặc mật khẩu không hợp lệ",
-        };
-      }
-    } else {
+  try {
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
       return {
         EC: 1,
         EM: "Email hoặc mật khẩu không hợp lệ",
       };
     }
+
+    if (user.isBan == 1) {
+      return {
+        EC: 2,
+        EM: "Tài khoản đã bị khóa",
+      };
+    }
+
+    const isMatchPassword = await bcrypt.compare(password, user.password);
+    if (!isMatchPassword) {
+      return {
+        EC: 1,
+        EM: "Email hoặc mật khẩu không hợp lệ",
+      };
+    }
+
+    const payload = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+    };
+
+    const access_token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRE,
+    });
+
+    return {
+      EC: 0,
+      access_token,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      },
+    };
   } catch (error) {
     console.log(error);
-    return null;
+    return {
+      EC: 99,
+      EM: "Lỗi hệ thống",
+    };
   }
 };
+
 const getUserService = async () => {
   try {
     const result = await User.findAll({
@@ -322,12 +338,19 @@ const getRomByIDService = async (id) => {
 };
 const getDanhGiaService = async (id_sanpham) => {
   try {
-    const result = await Danhgia.findAll({ where: { id_sanpham } });
-    return result;
+    return await Danhgia.findAll({
+      where: {
+        id_sanpham,
+        is_ban: 0,
+      },
+      order: [["ngay_tao", "DESC"]],
+    });
   } catch (error) {
+    console.log("getDanhGiaService error:", error);
     return null;
   }
 };
+
 const createDanhGiaService = async (
   id_user,
   id_sanpham,
@@ -364,6 +387,110 @@ const checkDanhGiaService = async (id_user, id_sanpham, id_order) => {
     return null;
   }
 };
+const getAddressesByUserService = async (id_user) => {
+  try {
+    return await ShippingAddress.findAll({
+      where: { id_user },
+      order: [["is_choose", "DESC"]],
+    });
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+
+const createAddressService = async (data) => {
+  try {
+    // nếu chọn làm mặc định → reset các địa chỉ khác
+    if (data.is_choose === 1) {
+      await ShippingAddress.update(
+        { is_choose: 0 },
+        { where: { id_user: data.id_user } }
+      );
+    }
+
+    return await ShippingAddress.create(data);
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+
+const updateAddressService = async (id, data) => {
+  try {
+    const address = await ShippingAddress.findByPk(id);
+    if (!address) return null;
+
+    if (data.is_choose === 1) {
+      await ShippingAddress.update(
+        { is_choose: 0 },
+        { where: { id_user: address.id_user } }
+      );
+    }
+
+    await address.update(data);
+    return address;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+
+const deleteAddressService = async (id) => {
+  try {
+    const address = await ShippingAddress.findByPk(id);
+    if (!address) return false;
+
+    await address.destroy();
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};
+
+const chooseAddressService = async (id) => {
+  try {
+    const address = await ShippingAddress.findByPk(id);
+    if (!address) return null;
+
+    await ShippingAddress.update(
+      { is_choose: 0 },
+      { where: { id_user: address.id_user } }
+    );
+
+    address.is_choose = 1;
+    await address.save();
+
+    return address;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+const truKho = async (item) => {
+  const kho = await kho_sanpham.findOne({
+    where: {
+      id_sanpham: item.id_sanpham,
+      id_rom: item.id_rom,
+      id_mausac: item.id_mau,
+    },
+  });
+
+  if (!kho) {
+    throw new Error("Không tồn tại kho sản phẩm");
+  }
+
+  if (kho.so_luong < item.soluong) {
+    throw new Error("Số lượng trong kho không đủ");
+  }
+
+  await kho.update({
+    so_luong: kho.so_luong - item.soluong,
+    trang_thai: kho.so_luong - item.soluong > 0 ? 1 : 0,
+  });
+};
+
 module.exports = {
   createUserService,
   loginUserService,
@@ -389,4 +516,10 @@ module.exports = {
   getDanhGiaService,
   createDanhGiaService,
   checkDanhGiaService,
+  getAddressesByUserService,
+  createAddressService,
+  updateAddressService,
+  deleteAddressService,
+  chooseAddressService,
+  truKho,
 };

@@ -28,6 +28,12 @@ const {
   getDanhGiaID,
   createDanhGia,
   checkDanhGia,
+  getAddressesByUser,
+  createAddress,
+  updateAddress,
+  deleteAddress,
+  chooseAddress,
+  repayOrder,
 } = require("../controllers/homeController");
 
 const auth = require("../middleware/auth");
@@ -71,10 +77,16 @@ const {
   getTagProduct,
   getDanhGia,
   banDanhGia,
+  deleteBlog,
+  createBlog,
+  getAllBlog,
+  getBlogById,
+  updateBlog,
 } = require("../controllers/adminController");
 const authAdmin = require("../middleware/authAdmiin");
 const { uploadDanhGia } = require("../helper/uploadDanhgia");
 const { getSanPhamALLIDService } = require("../services/userService");
+const upload = require("../helper/uploadAnhSP");
 
 const routerAPI = express.Router();
 routerAPI.get("/", (req, res) => {
@@ -102,6 +114,7 @@ routerAPI.post("/deletegh", deleteGioHang);
 routerAPI.post("/payment", createPayment);
 routerAPI.post("/callback", callbackPayment);
 routerAPI.post("/status", statusPayment);
+routerAPI.post("/repay", repayOrder);
 routerAPI.post("/createorders", createOrders);
 routerAPI.post("/orders", getOrder);
 routerAPI.post("/orderitem", getOrderItem);
@@ -133,8 +146,8 @@ routerAPI.get("/thongke/top3-tot", getTop3SanPhamTot);
 routerAPI.get("/thongke/top3-thap", getTop3SanPhamThap);
 routerAPI.get("/thongke/ti-le", getTiLeDanhGia);
 routerAPI.post("/product", getSanPhamByIdController);
-routerAPI.post("/createproduct", createSanPhamController);
-routerAPI.post("/updateProduct", updateSanPhamController);
+routerAPI.post("/createproduct", upload.any(), createSanPhamController);
+routerAPI.post("/updateProduct", upload.any(), updateSanPhamController);
 routerAPI.post("/deleteProduct", deleteSanPhamController);
 routerAPI.get("/orderAll", getAllOrderController);
 routerAPI.post("/updateStatusOrder", updateOrderStatus);
@@ -154,4 +167,14 @@ routerAPI.post("/getTagPro", getTagProduct);
 routerAPI.post("/deleteTagPro", deleteTagProduct);
 routerAPI.get("/getDanhGia", getDanhGia);
 routerAPI.post("/banDanhGia", banDanhGia);
+routerAPI.post("/create", createBlog);
+routerAPI.get("/read", getAllBlog);
+routerAPI.put("/update/:id", updateBlog);
+routerAPI.delete("/delete/:id", deleteBlog);
+routerAPI.get("/address/:id_user", getAddressesByUser);
+routerAPI.post("/address", createAddress);
+routerAPI.put("/address/:id", updateAddress);
+routerAPI.delete("/address/:id", deleteAddress);
+routerAPI.put("/address/choose/:id", chooseAddress);
+
 module.exports = routerAPI;

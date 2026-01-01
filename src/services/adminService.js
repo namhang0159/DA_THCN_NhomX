@@ -14,6 +14,9 @@ const User = require("../models/user");
 const sanphamtag = require("../models/sanphamtag");
 const { SanPham, SanPhamTag } = require("../models");
 const SanPhamTagMap = require("../models/sanpham_tag");
+const Blog = require("../models/blog");
+const kho_sanpham = require("../models/sanpham_kho");
+const sequelize = require("../config/database");
 const saltRounds = 10;
 require("dotenv").config();
 const createAdminService = async (username, email, password) => {
@@ -311,36 +314,65 @@ const getTiLeDanhGiaService = async () => {
   };
 };
 const createSanPhamService = async (data) => {
+  const t = await sequelize.transaction();
+
   try {
-    const { roms, mausacs, ...productData } = data;
+    const { roms = [], mausacs = [], kho = [], ...productData } = data;
 
-    // Tạo sản phẩm
-    const newProduct = await sanpham.create(productData);
+    // 1. Tạo sản phẩm
+    const newProduct = await sanpham.create(productData, { transaction: t });
 
-    // Thêm ROM nếu có
-    if (roms && roms.length > 0) {
+    // 2. Thêm ROM
+    let romRecords = [];
+    if (roms.length > 0) {
       const romData = roms.map((r) => ({
         rom: r.rom,
         gia_thaydoi: r.gia_thaydoi,
         id_sanpham: newProduct.id,
       }));
-      await rom.bulkCreate(romData);
+
+      romRecords = await rom.bulkCreate(romData, {
+        transaction: t,
+        returning: true,
+      });
     }
 
-    // Thêm màu sắc nếu có
-    if (mausacs && mausacs.length > 0) {
+    // 3. Thêm màu sắc
+    let mauRecords = [];
+    if (mausacs.length > 0) {
       const mauData = mausacs.map((m) => ({
         ten_mau: m.ten_mau,
         hinh_anh: m.hinh_anh,
         id_sanpham: newProduct.id,
       }));
-      await mausac.bulkCreate(mauData);
+
+      mauRecords = await mausac.bulkCreate(mauData, {
+        transaction: t,
+        returning: true,
+      });
     }
 
+    // 4. Thêm kho (ROM × MÀU)
+    if (kho.length > 0) {
+      const khoData = kho.map((k) => ({
+        id_sanpham: newProduct.id,
+        id_rom: romRecords[k.romIndex].id,
+        id_mausac: mauRecords[k.mauIndex].id,
+        so_luong: k.so_luong,
+        trang_thai: k.so_luong > 0 ? 1 : 0,
+      }));
+
+      await kho_sanpham.bulkCreate(khoData, {
+        transaction: t,
+      });
+    }
+
+    await t.commit();
     return newProduct;
   } catch (error) {
+    await t.rollback();
     console.error("Lỗi khi tạo sản phẩm:", error);
-    return null;
+    throw error;
   }
 };
 const getAllSanPhamService = async () => {
@@ -358,14 +390,30 @@ const getAllSanPhamService = async () => {
 // Lấy sản phẩm theo ID
 const getSanPhamByIdService = async (id) => {
   try {
-    const result = await sanpham.findOne({
+    const includeConfig = [
+      { model: rom, as: "roms" },
+      { model: mausac, as: "mausacs" },
+      {
+        model: kho_sanpham,
+        as: "kho",
+        attributes: ["id_rom", "id_mausac", "so_luong", "trang_thai"],
+        include: [
+          { model: rom, attributes: ["id", "rom"] },
+          { model: mausac, attributes: ["id", "ten_mau"] },
+        ],
+      },
+    ];
+
+    if (!id) {
+      return await sanpham.findAll({
+        include: includeConfig,
+      });
+    }
+
+    return await sanpham.findOne({
       where: { id },
-      include: [
-        { model: rom, as: "roms" },
-        { model: mausac, as: "mausacs" },
-      ],
+      include: includeConfig,
     });
-    return result;
   } catch (error) {
     console.error(error);
     return null;
@@ -373,34 +421,72 @@ const getSanPhamByIdService = async (id) => {
 };
 
 const updateSanPhamService = async (id, data) => {
+  const t = await sequelize.transaction();
+
   try {
-    const { roms = [], mausacs = [], ...productData } = data;
+    const { roms = [], mausacs = [], kho = [], ...productData } = data;
 
-    await sanpham.update(productData, { where: { id } });
+    // 1️⃣ Update thông tin sản phẩm
+    await sanpham.update(productData, {
+      where: { id },
+      transaction: t,
+    });
 
-    if (roms) {
-      await rom.destroy({ where: { id_sanpham: id } });
-      const romData = roms.map((r) => ({
+    // 2️⃣ XÓA ĐÚNG THỨ TỰ (CON → CHA)
+    await kho_sanpham.destroy({
+      where: { id_sanpham: id },
+      transaction: t,
+    });
+
+    await rom.destroy({
+      where: { id_sanpham: id },
+      transaction: t,
+    });
+
+    await mausac.destroy({
+      where: { id_sanpham: id },
+      transaction: t,
+    });
+
+    // 3️⃣ TẠO ROM MỚI
+    const romRecords = await rom.bulkCreate(
+      roms.map((r) => ({
         rom: r.rom,
         gia_thaydoi: r.gia_thaydoi,
         id_sanpham: id,
-      }));
-      await rom.bulkCreate(romData);
-    }
+      })),
+      { transaction: t }
+    );
 
-    if (mausacs) {
-      await mausac.destroy({ where: { id_sanpham: id } });
-      const mauData = mausacs.map((m) => ({
+    // 4️⃣ TẠO MÀU MỚI
+    const mauRecords = await mausac.bulkCreate(
+      mausacs.map((m) => ({
         ten_mau: m.ten_mau,
         hinh_anh: m.hinh_anh,
         id_sanpham: id,
-      }));
-      await mausac.bulkCreate(mauData);
+      })),
+      { transaction: t }
+    );
+
+    // 5️⃣ TẠO LẠI KHO
+    if (kho.length > 0) {
+      await kho_sanpham.bulkCreate(
+        kho.map((k) => ({
+          id_sanpham: id,
+          id_rom: romRecords[k.romIndex]?.id,
+          id_mausac: mauRecords[k.mauIndex]?.id,
+          so_luong: k.so_luong,
+          trang_thai: k.so_luong > 0 ? 1 : 0,
+        })),
+        { transaction: t }
+      );
     }
 
+    await t.commit();
     return true;
   } catch (error) {
-    console.error("Lỗi khi cập nhật sản phẩm:", error);
+    await t.rollback();
+    console.error("Lỗi update sản phẩm:", error);
     return false;
   }
 };
@@ -408,6 +494,8 @@ const updateSanPhamService = async (id, data) => {
 // Xóa sản phẩm
 const deleteSanPhamService = async (id) => {
   try {
+    await kho_sanpham.destroy({ where: { id_sanpham: id } });
+
     // Xóa ROM liên kết
     await rom.destroy({ where: { id_sanpham: id } });
 
@@ -732,7 +820,156 @@ const banDanhGiaService = async (id, is_ban) => {
     return false;
   }
 };
+const createBlogService = async (data) => {
+  try {
+    const { tieu_de, noi_dung, hinh_anh, video, id_sanpham } = data;
 
+    // kiểm tra sản phẩm tồn tại
+    const sanpham = await SanPham.findByPk(id_sanpham);
+    if (!sanpham) {
+      return {
+        EM: "Sản phẩm không tồn tại",
+        EC: 1,
+        DT: null,
+      };
+    }
+
+    const blog = await Blog.create({
+      tieu_de,
+      noi_dung,
+      hinh_anh,
+      video,
+      id_sanpham,
+    });
+
+    return {
+      EM: "Thêm blog thành công",
+      EC: 0,
+      DT: blog,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      EM: "Lỗi service create blog",
+      EC: -1,
+      DT: null,
+    };
+  }
+};
+
+// Lấy danh sách blog
+const getAllBlogService = async () => {
+  try {
+    const blogs = await Blog.findAll({
+      include: [
+        {
+          model: SanPham,
+          attributes: ["id", "tieu_de"],
+        },
+      ],
+    });
+
+    return {
+      EM: "Lấy danh sách blog thành công",
+      EC: 0,
+      DT: blogs,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      EM: "Lỗi service get blog",
+      EC: -1,
+      DT: null,
+    };
+  }
+};
+
+// Lấy blog theo id
+const getBlogByIdService = async (id) => {
+  try {
+    const blog = await Blog.findByPk(id);
+
+    if (!blog) {
+      return {
+        EM: "Blog không tồn tại",
+        EC: 1,
+        DT: null,
+      };
+    }
+
+    return {
+      EM: "Lấy blog thành công",
+      EC: 0,
+      DT: blog,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      EM: "Lỗi service get blog by id",
+      EC: -1,
+      DT: null,
+    };
+  }
+};
+
+const updateBlogService = async (id, data) => {
+  try {
+    const blog = await Blog.findByPk(id);
+
+    if (!blog) {
+      return {
+        EM: "Blog không tồn tại",
+        EC: 1,
+        DT: null,
+      };
+    }
+
+    await blog.update(data);
+
+    return {
+      EM: "Cập nhật blog thành công",
+      EC: 0,
+      DT: blog,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      EM: "Lỗi service update blog",
+      EC: -1,
+      DT: null,
+    };
+  }
+};
+
+// Xóa blog
+const deleteBlogService = async (id) => {
+  try {
+    const blog = await Blog.findByPk(id);
+
+    if (!blog) {
+      return {
+        EM: "Blog không tồn tại",
+        EC: 1,
+        DT: null,
+      };
+    }
+
+    await blog.destroy();
+
+    return {
+      EM: "Xóa blog thành công",
+      EC: 0,
+      DT: null,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      EM: "Lỗi service delete blog",
+      EC: -1,
+      DT: null,
+    };
+  }
+};
 module.exports = {
   loginAdminService,
   createAdminService,
@@ -772,4 +1009,9 @@ module.exports = {
   getProductWithTagService,
   getDanhGiaService,
   banDanhGiaService,
+  createBlogService,
+  getAllBlogService,
+  getBlogByIdService,
+  updateBlogService,
+  deleteBlogService,
 };

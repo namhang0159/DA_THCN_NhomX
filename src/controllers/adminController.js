@@ -38,6 +38,11 @@ const {
   getProductWithTagService,
   banDanhGiaService,
   getDanhGiaService,
+  createBlogService,
+  getAllBlogService,
+  getBlogByIdService,
+  updateBlogService,
+  deleteBlogService,
 } = require("../services/adminService");
 const createAdmin = async (req, res) => {
   console.log("BODY:", req.body);
@@ -183,12 +188,59 @@ const getTiLeDanhGia = async (req, res) => {
   }
 };
 const createSanPhamController = async (req, res) => {
-  const data = req.body;
-  const result = await createSanPhamService(data);
-  if (result) {
-    return res.status(201).json({ data: result });
+  try {
+    const files = req.files || [];
+
+    /* ===== ẢNH SẢN PHẨM CHÍNH ===== */
+    const imageFile = files.find((f) => f.fieldname === "image");
+
+    const hinh_anh = imageFile
+      ? `/uploads/${imageFile.filename}`
+      : req.body.hinh_anh || null; // URL
+
+    /* ===== ROM + KHO ===== */
+    const roms = req.body.roms ? JSON.parse(req.body.roms) : [];
+    const kho = req.body.kho ? JSON.parse(req.body.kho) : [];
+
+    /* ===== MAU SẮC ===== */
+    let mausacs = [];
+
+    if (Array.isArray(req.body.mausacs)) {
+      mausacs = req.body.mausacs.map((mau, index) => {
+        const file = files.find(
+          (f) => f.fieldname === `mausacs[${index}][image]`
+        );
+
+        return {
+          ten_mau: mau.ten_mau,
+          hinh_anh: file
+            ? `/uploads/${file.filename}` // FILE
+            : mau.hinh_anh || null, // URL
+        };
+      });
+    }
+
+    const data = {
+      tieu_de: req.body.tieu_de,
+      gia_ban: req.body.gia_ban,
+      id_danh_muc: req.body.id_danh_muc,
+      noi_dung: req.body.noi_dung,
+      roms,
+      kho,
+      mausacs,
+      hinh_anh,
+    };
+
+    await createSanPhamService(data);
+
+    return res.status(200).json({ message: "Tạo sản phẩm thành công" });
+  } catch (err) {
+    console.error("CREATE PRODUCT ERROR:", err);
+    return res.status(500).json({
+      message: "Server error",
+      error: err.message,
+    });
   }
-  return res.status(500).json({ EC: 1, EM: "Thêm sản phẩm thất bại" });
 };
 
 // Lấy tất cả sản phẩm
@@ -207,15 +259,64 @@ const getSanPhamByIdController = async (req, res) => {
   return res.status(404).json({ EC: 1, EM: "Không tìm thấy sản phẩm" });
 };
 
-// Cập nhật sản phẩm
 const updateSanPhamController = async (req, res) => {
-  const { id, dataVao } = req.body;
+  try {
+    const { id } = req.body;
+    const files = req.files || [];
 
-  const result = await updateSanPhamService(id, dataVao);
-  if (result) {
-    return res.status(200).json({ EM: "Cập nhật thành công" });
+    /* ===== ẢNH SẢN PHẨM CHÍNH ===== */
+    const imageFile = files.find((f) => f.fieldname === "image");
+
+    const hinh_anh = imageFile
+      ? `/uploads/${imageFile.filename}`
+      : req.body.hinh_anh || null; // URL cũ
+
+    /* ===== ROM + KHO ===== */
+    const roms = req.body.roms ? JSON.parse(req.body.roms) : [];
+    const kho = req.body.kho ? JSON.parse(req.body.kho) : [];
+
+    /* ===== MÀU SẮC ===== */
+    let mausacs = [];
+
+    if (Array.isArray(req.body.mausacs)) {
+      mausacs = req.body.mausacs.map((mau, index) => {
+        const file = files.find(
+          (f) => f.fieldname === `mausacs[${index}][image]`
+        );
+
+        return {
+          ten_mau: mau.ten_mau,
+          hinh_anh: file
+            ? `/uploads/${file.filename}` // upload mới
+            : mau.hinh_anh || null, // giữ ảnh cũ
+        };
+      });
+    }
+
+    const data = {
+      tieu_de: req.body.tieu_de,
+      gia_ban: req.body.gia_ban,
+      id_danh_muc: req.body.id_danh_muc,
+      noi_dung: req.body.noi_dung,
+      roms,
+      kho,
+      mausacs,
+      hinh_anh,
+    };
+
+    await updateSanPhamService(id, data);
+
+    return res.status(200).json({
+      EC: 0,
+      EM: "Cập nhật sản phẩm thành công",
+    });
+  } catch (error) {
+    console.error("updateSanPhamController error:", error);
+    return res.status(500).json({
+      EC: -1,
+      EM: "Lỗi server khi cập nhật sản phẩm",
+    });
   }
-  return res.status(500).json({ EM: "Cập nhật thất bại" });
 };
 
 const deleteSanPhamController = async (req, res) => {
@@ -356,7 +457,37 @@ const banDanhGia = async (req, res) => {
     success: result,
   });
 };
+const createBlog = async (req, res) => {
+  const result = await createBlogService(req.body);
+  return res.status(200).json(result);
+};
 
+// Lấy danh sách blog
+const getAllBlog = async (req, res) => {
+  const result = await getAllBlogService();
+  return res.status(200).json(result);
+};
+
+// Lấy blog theo id
+const getBlogById = async (req, res) => {
+  const { id } = req.params;
+  const result = await getBlogByIdService(id);
+  return res.status(200).json(result);
+};
+
+// Cập nhật blog
+const updateBlog = async (req, res) => {
+  const { id } = req.params;
+  const result = await updateBlogService(id, req.body);
+  return res.status(200).json(result);
+};
+
+// Xóa blog
+const deleteBlog = async (req, res) => {
+  const { id } = req.params;
+  const result = await deleteBlogService(id);
+  return res.status(200).json(result);
+};
 module.exports = {
   loginAdmin,
   getAdminMe,
@@ -397,4 +528,9 @@ module.exports = {
   getTagProduct,
   getDanhGia,
   banDanhGia,
+  createBlog,
+  getAllBlog,
+  getBlogById,
+  updateBlog,
+  deleteBlog,
 };

@@ -1,4 +1,6 @@
+const sequelize = require("../config/database");
 const Orders = require("../models/orders");
+const kho_sanpham = require("../models/sanpham_kho");
 const { get } = require("../routes/api");
 const {
   createPaymentService,
@@ -31,6 +33,12 @@ const {
   getDanhGiaService,
   createDanhGiaService,
   checkDanhGiaService,
+  getAddressesByUserService,
+  createAddressService,
+  updateAddressService,
+  deleteAddressService,
+  chooseAddressService,
+  truKho,
 } = require("../services/userService");
 const createUser = async (req, res) => {
   console.log("BODY:", req.body);
@@ -46,11 +54,11 @@ const loginUser = async (req, res) => {
   console.log("BODY:", req.body);
   const { email, password } = req.body;
   const data = await loginUserService(email, password);
-  if (data) {
-    return res
-      .status(201)
-      .json({ message: "Login USER thành công", user: data });
-  } else {
+  if (data.EC !== 0) {
+    return res.status(401).json(data);
+  }
+  return res.status(201).json({ message: "Login USER thành công", user: data });
+  if (!data) {
     return res.status(500).json({ message: "Login USER thất bại" });
   }
 };
@@ -203,6 +211,10 @@ const callbackPayment = async (req, res) => {
     console.log(req.body);
     const { orderId, resultCode } = req.body;
     const id_order = orderId.split("_")[0];
+    const order = await Orders.findByPk(id_order);
+    if (order.status === "Đã thanh toán - Chờ xác nhận") {
+      return res.status(200).json({ message: "OK" });
+    }
     if (resultCode === 0) {
       await Orders.update(
         { status: "Đã thanh toán - Chờ xác nhận" },
@@ -225,6 +237,43 @@ const statusPayment = async (req, res) => {
     return res.status(500).json({ message: "CREATE PAY sanpham thất bại" });
   }
 };
+const repayOrder = async (req, res) => {
+  try {
+    const { id } = req.body;
+
+    const order = await Orders.findByPk(id);
+    if (!order) {
+      return res.status(404).json({ message: "Đơn hàng không tồn tại" });
+    }
+
+    if (order.status === "Đã thanh toán - Chờ xác nhận") {
+      return res.status(400).json({ message: "Đơn hàng đã thanh toán" });
+    }
+
+    if (!["Pending", "Thất bại"].includes(order.status)) {
+      return res
+        .status(400)
+        .json({ message: "Không thể thanh toán lại đơn này" });
+    }
+
+    const orderId = `${order.id}_${Date.now()}`;
+
+    const momoRes = await createPaymentService(orderId, Number(order.amount));
+
+    if (!momoRes || !momoRes.payUrl) {
+      return res.status(500).json({ message: "Tạo thanh toán MoMo thất bại" });
+    }
+
+    return res.status(200).json({
+      message: "Tạo link thanh toán lại thành công",
+      paymentUrl: momoRes.payUrl,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
 const createOrders = async (req, res) => {
   const { id_user, items, ten, sdt, dia_chi, cach_nhan, cach_thanhtoan } =
     req.body;
@@ -240,7 +289,27 @@ const createOrders = async (req, res) => {
           .status(404)
           .json({ message: `Sản phẩm ID ${item.id_sanpham} không tồn tại` });
       }
+
+      for (const item of items) {
+        const kho = await kho_sanpham.findOne({
+          where: {
+            id_sanpham: item.id_sanpham,
+            id_rom: item.id_rom,
+            id_mausac: item.id_mau,
+            trang_thai: 1,
+          },
+        });
+
+        if (!kho || kho.so_luong < item.soluong) {
+          return res.status(400).json({
+            message: "Sản phẩm không đủ tồn kho",
+          });
+        }
+      }
       amount += Number(sp.gia_ban) * Number(item.soluong);
+    }
+    for (const item of items) {
+      await truKho(item);
     }
     if (amount > 1000000) {
       amount = 50000;
@@ -396,7 +465,54 @@ const checkDanhGia = async (req, res) => {
     return res.status(500).json({ message: "Server Error" });
   }
 };
+const getAddressesByUser = async (req, res) => {
+  const { id_user } = req.params;
+  const data = await getAddressesByUserService(id_user);
+  return res.status(200).json(data);
+};
 
+const createAddress = async (req, res) => {
+  const data = await createAddressService(req.body);
+  if (!data) return res.status(500).json({ message: "Tạo địa chỉ thất bại" });
+
+  return res.status(201).json({
+    message: "Tạo địa chỉ thành công",
+    data,
+  });
+};
+
+const updateAddress = async (req, res) => {
+  const { id } = req.params;
+  const data = await updateAddressService(id, req.body);
+
+  if (!data) return res.status(404).json({ message: "Không tìm thấy địa chỉ" });
+
+  return res.status(200).json({
+    message: "Cập nhật địa chỉ thành công",
+    data,
+  });
+};
+
+const deleteAddress = async (req, res) => {
+  const { id } = req.params;
+  const result = await deleteAddressService(id);
+
+  if (!result) return res.status(404).json({ message: "Xóa địa chỉ thất bại" });
+
+  return res.status(200).json({ message: "Xóa địa chỉ thành công" });
+};
+
+const chooseAddress = async (req, res) => {
+  const { id } = req.params;
+  const data = await chooseAddressService(id);
+
+  if (!data) return res.status(404).json({ message: "Không tìm thấy địa chỉ" });
+
+  return res.status(200).json({
+    message: "Đã chọn địa chỉ mặc định",
+    data,
+  });
+};
 module.exports = {
   createUser,
   loginUser,
@@ -426,4 +542,10 @@ module.exports = {
   getDanhGiaID,
   createDanhGia,
   checkDanhGia,
+  getAddressesByUser,
+  createAddress,
+  updateAddress,
+  deleteAddress,
+  chooseAddress,
+  repayOrder,
 };
