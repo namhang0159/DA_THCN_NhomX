@@ -4,7 +4,7 @@ var secretKey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
 var orderInfo = "pay with MoMo";
 var partnerCode = "MOMO";
 var redirectUrl = "http://localhost:5173/result";
-var ipnUrl = "https://5feaa9cf83ee.ngrok-free.app/v1/api/callback";
+var ipnUrl = "https://0c4386be4715.ngrok-free.app/v1/api/callback";
 var requestType = "payWithMethod";
 
 var orderId = partnerCode + new Date().getTime();

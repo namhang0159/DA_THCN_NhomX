@@ -43,11 +43,19 @@ const {
 const createUser = async (req, res) => {
   console.log("BODY:", req.body);
   const { name, email, password } = req.body;
-  const data = await createUserService(name, email, password);
-  if (data) {
-    return res.status(201).json({ message: "Tạo USER thành công", user: data });
-  } else {
-    return res.status(500).json({ message: "Tạo USER thất bại" });
+  try {
+    const data = await createUserService(name, email, password);
+    if (data) {
+      return res
+        .status(201)
+        .json({ message: "Tạo USER thành công", user: data });
+    } else if (data == null) {
+      return res.status(409).json({
+        message: "USER_EXIST",
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({ message: "Tạo USER thất bại", error });
   }
 };
 const loginUser = async (req, res) => {
