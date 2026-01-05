@@ -8,7 +8,7 @@ import {
   getRomApi,
   getSanPhamIDApi,
   repayOrderApi,
-} from "./util/api";
+} from "../util/api";
 import { useEffect, useState } from "react";
 
 export const Orderinfo = () => {

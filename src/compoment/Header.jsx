@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getMeApi } from "./util/api";
+import { getMeApi, getTagApi } from "../util/api";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import Modal from "react-modal";
 
@@ -27,6 +27,22 @@ export const Header = () => {
       }
     };
     fetchMe();
+  }, []);
+
+  const [tags, setTags] = useState([]);
+  const [openProductMenu, setOpenProductMenu] = useState(false);
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const res = await getTagApi();
+        console.log(res);
+        setTags(res.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fetchTags();
   }, []);
 
   const submitSearch = () => {
@@ -65,9 +81,44 @@ export const Header = () => {
             <Link className="hover:text-blue-600" to="/">
               Trang chủ
             </Link>
-            <Link className="hover:text-blue-600" to="/pageall">
-              Sản phẩm
-            </Link>
+            <div className="relative">
+              <span
+                className="hover:text-blue-600 cursor-pointer"
+                onClick={() => setOpenProductMenu(!openProductMenu)}
+              >
+                Sản phẩm
+              </span>
+
+              {openProductMenu && (
+                <div className="absolute top-full left-0 mt-2 w-44 bg-white rounded-lg shadow z-50">
+                  <div
+                    onClick={() => {
+                      navigate("/pageall");
+                      setOpenProductMenu(false);
+                    }}
+                    className="px-4 py-2 font-medium hover:bg-gray-100 cursor-pointer"
+                  >
+                    Tất cả sản phẩm
+                  </div>
+
+                  <hr />
+
+                  {tags.map((tag) => (
+                    <div
+                      key={tag.id}
+                      onClick={() => {
+                        navigate(`/pageall?tagId=${tag.id}`);
+                        setOpenProductMenu(false);
+                      }}
+                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                    >
+                      {tag.ten_tag}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <Link className="hover:text-blue-600" to="/about">
               Giới thiệu
             </Link>
@@ -155,27 +206,106 @@ export const Header = () => {
           </div>
 
           {/* Mobile button */}
-          <button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)}>
-            ☰
-          </button>
+          <div className="md:hidden flex items-center gap-3">
+            <button onClick={() => setMenuOpen(true)}>☰</button>
+            <button onClick={() => navigate("/shoppingcard")}>
+              <i className="fa fa-shopping-cart"></i>
+            </button>
+          </div>
         </div>
 
         {/* Mobile menu */}
         {menuOpen && (
-          <div className="md:hidden bg-white border-t">
-            <div className="flex flex-col p-4 gap-3 text-sm">
-              <Link to="/" onClick={() => setMenuOpen(false)}>
-                Trang chủ
-              </Link>
-              <Link to="/pageall" onClick={() => setMenuOpen(false)}>
-                Sản phẩm
-              </Link>
-              <Link to="/about" onClick={() => setMenuOpen(false)}>
-                Giới thiệu
-              </Link>
-              <Link to="/contact" onClick={() => setMenuOpen(false)}>
-                Liên hệ
-              </Link>
+          <div className="fixed inset-0 z-50 bg-white flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b">
+              <span className="font-bold">Menu</span>
+              <button onClick={() => setMenuOpen(false)}>✕</button>
+            </div>
+
+            {/* Search */}
+            <div className="p-4">
+              <div className="flex border rounded-full px-3">
+                <input
+                  className="flex-1 outline-none py-2 text-sm"
+                  placeholder="Tìm sản phẩm..."
+                  value={keyword}
+                  onChange={(e) => setKeyword(e.target.value)}
+                />
+                <button onClick={submitSearch}>
+                  <i className="fa fa-search"></i>
+                </button>
+              </div>
+            </div>
+
+            {/* Menu content */}
+            <div className="flex-1 overflow-y-auto px-4 text-sm">
+              {!user ? (
+                <div className="flex gap-2 mb-4">
+                  <button
+                    onClick={() => navigate("/login")}
+                    className="flex-1 py-2 bg-blue-600 text-white rounded"
+                  >
+                    Đăng nhập
+                  </button>
+                  <button
+                    onClick={() => navigate("/register")}
+                    className="flex-1 py-2 bg-gray-200 rounded"
+                  >
+                    Đăng ký
+                  </button>
+                </div>
+              ) : (
+                <div className="mb-4 font-medium">
+                  {" "}
+                  <span>{name}</span>
+                  <div
+                    onClick={() => navigate("/profile")}
+                    className="px-4 py-3 hover:bg-gray-100 cursor-pointer"
+                  >
+                    Thông tin cá nhân
+                  </div>
+                  <div
+                    onClick={() => navigate("/order")}
+                    className="px-4 py-3 hover:bg-gray-100 cursor-pointer"
+                  >
+                    Đơn hàng
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <div onClick={() => navigate("/")}>Trang chủ</div>
+
+                <div>
+                  <div className="font-medium mb-2">Sản phẩm</div>
+                  <div className="pl-3 space-y-2 text-gray-600">
+                    <div onClick={() => navigate("/pageall")}>
+                      Tất cả sản phẩm
+                    </div>
+                    {tags.map((tag) => (
+                      <div
+                        key={tag.id}
+                        onClick={() => navigate(`/pageall?tagId=${tag.id}`)}
+                      >
+                        {tag.ten_tag}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div onClick={() => navigate("/about")}>Giới thiệu</div>
+                <div onClick={() => navigate("/contact")}>Liên hệ</div>
+
+                {user && (
+                  <div
+                    onClick={() => setLogoutOpen(true)}
+                    className="text-red-600 pt-4"
+                  >
+                    Đăng xuất
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

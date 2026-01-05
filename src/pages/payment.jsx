@@ -6,12 +6,11 @@ import {
   getMauSacApi,
   getMeApi,
   getRomApi,
-  getSanPhamIDApi,
   createAddressApi,
   updateAddressApi,
   deleteAddressApi,
   getSanphamRomMauApi,
-} from "./util/api";
+} from "../util/api";
 import { useNavigate } from "react-router-dom";
 
 const Payment = () => {
@@ -30,7 +29,7 @@ const Payment = () => {
   const [mauSac, setMauSac] = useState([]);
   const [addresses, setAddresses] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [selectedAddress, setSelectedAddress] = useState(null);
+  // const [selectedAddress, setSelectedAddress] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
@@ -49,7 +48,7 @@ const Payment = () => {
       setAddresses(data);
       const chosen = data.find((a) => a.is_choose === 1);
       if (chosen) {
-        setSelectedAddress(chosen);
+        // setSelectedAddress(chosen);
         setHoten(chosen.hoten);
         setSdt(chosen.sdt);
         setDiachi(chosen.diachi);

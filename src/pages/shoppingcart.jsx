@@ -9,7 +9,7 @@ import {
   updateGioHangApi,
   updateMauGHApi,
   updateRomGHApi,
-} from "./util/api";
+} from "../util/api";
 import { useNavigate } from "react-router-dom";
 
 const ShoppingCard = () => {

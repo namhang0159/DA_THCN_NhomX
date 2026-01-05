@@ -7,11 +7,11 @@ import {
   getRomApi,
   getSanPhamHotApi,
   getSanphamRomMauApi,
-} from "./util/api";
-import Blog from "./blog";
+} from "../util/api";
+import Blog from "../compoment/blog";
 import Modal from "react-modal";
-import { GroupDanhGia } from "./compoment/danhgia/groupDanhGia";
-import { ListSale } from "./ListSale";
+import { GroupDanhGia } from "../compoment/danhgia/groupDanhGia";
+import { ListSale } from "../compoment/ListSale";
 const PageSP = () => {
   const [modalIsOpen, setIsOpen] = useState(false);
   const [modalMessage, setModalMessage] = useState("");

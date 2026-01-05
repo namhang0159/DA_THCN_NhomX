@@ -1,6 +1,6 @@
 import React from "react";
 import { useEffect, useState } from "react";
-import { getBlogApi } from "./util/api";
+import { getBlogApi } from "../util/api";
 import YouTube from "react-youtube";
 
 const Blog = ({ id, title }) => {

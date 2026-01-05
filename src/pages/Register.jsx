@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createUserApi } from "./util/api";
+import { createUserApi } from "../util/api";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -21,12 +21,20 @@ const Register = () => {
       return;
     }
 
-    const res = await createUserApi(name, email, password);
-    if (res) {
-      alert("Đăng ký thành công!");
-      navigate("/login");
-    } else {
-      alert("Đăng ký thất bại!");
+    try {
+      const res = await createUserApi(name, email, password);
+      if (res) {
+        alert("Đăng ký thành công!");
+        navigate("/login");
+      }
+    } catch (error) {
+      const message = error?.response?.data?.message;
+
+      if (message === "USER_EXIST") {
+        alert("Email đã được đăng ký!");
+      } else {
+        alert("Đăng ký thất bại, vui lòng thử lại!");
+      }
     }
   };
 

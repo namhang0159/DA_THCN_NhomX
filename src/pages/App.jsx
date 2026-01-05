@@ -1,10 +1,14 @@
-import { Header } from "./Header";
-import { Banner } from "./Banner";
-import { ListSale } from "./ListSale";
-import { Content } from "./Content";
+import { Header } from "../compoment/Header";
+import { Banner } from "../compoment/Banner";
+import { ListSale } from "../compoment/ListSale";
+import { Content } from "../compoment/Content";
 import { useEffect, useState } from "react";
-import axios from "./util/axios.cusomize";
-import { getSanPhamBanChayApi, getSanPhamHotApi, getUserApi } from "./util/api";
+import axios from "../util/axios.cusomize";
+import {
+  getSanPhamBanChayApi,
+  getSanPhamHotApi,
+  getUserApi,
+} from "../util/api";
 function App() {
   useEffect(() => {
     const fetchhello = async () => {

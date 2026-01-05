@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Content } from "./Content";
-import { getSanPhamApi } from "./util/api";
+import { Content } from "../compoment/Content";
+import { getSanPhamApi } from "../util/api";
 
 const PageSearch = () => {
   const [searchMang] = useSearchParams();

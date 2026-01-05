@@ -239,7 +239,15 @@ const repayOrderApi = (id) => {
 
   return axios.post(URL_API, data);
 };
-
+const getTagApi = () => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/getTag`;
+  return axios.get(URL_API);
+};
+const getTagProductApi = (id_tag) => {
+  const URL_API = `${import.meta.env.VITE_BACKEND_URL}/v1/api/getTagPro`;
+  const data = { id_tag };
+  return axios.post(URL_API, data);
+};
 export {
   createUserApi,
   loginUserApi,
@@ -273,4 +281,6 @@ export {
   chooseAddressApi,
   getSanphamRomMauApi,
   repayOrderApi,
+  getTagApi,
+  getTagProductApi,
 };

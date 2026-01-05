@@ -5,7 +5,7 @@ import {
   getOrdersApi,
   getOrderItemApi,
   getSanPhamIDApi,
-} from "./util/api";
+} from "../util/api";
 
 const Orders = () => {
   const [userId, setUserId] = useState(null);
