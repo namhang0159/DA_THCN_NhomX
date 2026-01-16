@@ -1,0 +1,525 @@
+const User = require("../models/user");
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
+const jwt = require("jsonwebtoken");
+const sanpham = require("../models/sanpham");
+const sanphamtag = require("../models/sanphamtag");
+const danhmucsanpham = require("../models/danhmucsanpham");
+const mausac = require("../models/mausac");
+const Blog = require("../models/blog");
+const giohang = require("../models/giohang");
+const Orders = require("../models/orders");
+const { OrderItem } = require("../models/orderitem");
+const rom = require("../models/rom");
+const { where, DATE } = require("sequelize");
+const Danhgia = require("../models/danhgia");
+const { now } = require("sequelize/lib/utils");
+const ShippingAddress = require("../models/shippingAddress");
+const kho_sanpham = require("../models/sanpham_kho");
+
+require("dotenv").config();
+const createUserService = async (name, email, password) => {
+  if (!password) {
+    throw new Error("Password is required");
+  }
+  const user = await User.findOne({ where: { email } });
+  if (user) {
+    console.log("User exist");
+    return null;
+  }
+  try {
+    const hashPassword = await bcrypt.hash(password, saltRounds);
+    const result = await User.create({ name, email, password: hashPassword });
+    return result;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+const loginUserService = async (email, password) => {
+  if (!password) {
+    throw new Error("Password is required");
+  }
+
+  try {
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      return {
+        EC: 1,
+        EM: "Email hoặc mật khẩu không hợp lệ",
+      };
+    }
+
+    if (user.isBan == 1) {
+      return {
+        EC: 2,
+        EM: "Tài khoản đã bị khóa",
+      };
+    }
+
+    const isMatchPassword = await bcrypt.compare(password, user.password);
+    if (!isMatchPassword) {
+      return {
+        EC: 1,
+        EM: "Email hoặc mật khẩu không hợp lệ",
+      };
+    }
+
+    const payload = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+    };
+
+    const access_token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRE,
+    });
+
+    return {
+      EC: 0,
+      access_token,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      },
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      EC: 99,
+      EM: "Lỗi hệ thống",
+    };
+  }
+};
+
+const getUserService = async () => {
+  try {
+    const result = await User.findAll({
+      attributes: { exclude: ["password"] },
+    });
+    return result;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+const getSanPhamService = async (tagName) => {
+  try {
+    if (tagName) {
+      return await sanpham.findAll({
+        include: [
+          {
+            model: sanphamtag,
+            where: { ten_tag: tagName },
+            through: { attributes: [] },
+          },
+        ],
+      });
+    } else {
+      return await sanpham.findAll();
+    }
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+const getSanPhamIDService = async (id) => {
+  try {
+    const result = await sanpham.findOne({ where: { id: id } });
+    return result;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+const getSanPhamALLIDService = async (id) => {
+  try {
+    const result = await sanpham.findAll({ where: { id: id } });
+    return result;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+const getDanhMucService = async () => {
+  try {
+    const result = await danhmucsanpham.findAll();
+    return result;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+const getMauSacService = async () => {
+  try {
+    const result = await mausac.findAll();
+    return result;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+const getBlogService = async () => {
+  try {
+    const result = await Blog.findAll();
+    return result;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+const getGioHangApi = async () => {
+  try {
+    const result = await giohang.findAll();
+    return result;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+const updateGioHangService = async (id, soluong) => {
+  try {
+    const result = await giohang.update({ soluong }, { where: { id } });
+    return result;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+const addGioHangService = async (
+  soluong,
+  id_sanpham,
+  id_user,
+  id_mau,
+  id_rom
+) => {
+  try {
+    const exist = await giohang.findOne({
+      where: { id_user, id_sanpham, id_mau, id_rom },
+    });
+
+    if (exist) {
+      exist.soluong += soluong;
+      await exist.save();
+      return exist;
+    } else {
+      const result = await giohang.create({
+        soluong,
+        id_sanpham,
+        id_user,
+        id_mau,
+        id_rom,
+      });
+      return result;
+    }
+  } catch (error) {
+    console.log("Lỗi addGioHangService:", error);
+    return null;
+  }
+};
+const deleteGioHangService = async (id) => {
+  try {
+    const result = await giohang.destroy({
+      where: { id },
+    });
+    return result;
+  } catch (error) {
+    console.log("Lỗi addGioHangService:", error);
+    return null;
+  }
+};
+const updateMauGioHangService = async (id, id_mau) => {
+  try {
+    const result = await giohang.update({ id_mau }, { where: { id } });
+    return result;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+const updateRomGioHangService = async (id, id_rom) => {
+  try {
+    const result = await giohang.update({ id_rom }, { where: { id } });
+    return result;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+const createOrderService = async (
+  amount,
+  cach_thanhtoan,
+  cach_nhan,
+  name_ship,
+  sdt,
+  dia_chi,
+  id_user
+) => {
+  try {
+    const status = "Pending";
+    const result = await Orders.create({
+      amount,
+      cach_thanhtoan,
+      cach_nhan,
+      name_ship,
+      sdt,
+      dia_chi,
+      id_user,
+      status,
+    });
+
+    return result;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+const createOrderItemService = async (
+  soluong,
+  id_order,
+  id_sanpham,
+  id_mau,
+  id_rom
+) => {
+  try {
+    const result = await OrderItem.create({
+      soluong,
+      id_order,
+      id_sanpham,
+      id_mau,
+      id_rom,
+    });
+
+    return result;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+const getOrdersService = async (id_user) => {
+  try {
+    if (id_user !== undefined && id_user !== null) {
+      const result = await Orders.findAll({ where: { id_user } });
+      return result;
+    } else {
+      return;
+    }
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+const getOrderItemService = async (id_order) => {
+  try {
+    const result = await OrderItem.findAll({ where: { id_order: id_order } });
+    return result;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+const getRomService = async () => {
+  try {
+    const result = await rom.findAll();
+    return result;
+  } catch (error) {
+    return null;
+  }
+};
+const getRomByIDService = async (id) => {
+  try {
+    const result = await rom.findAll({ where: { id: id } });
+    return result;
+  } catch (error) {
+    return null;
+  }
+};
+const getDanhGiaService = async (id_sanpham) => {
+  try {
+    return await Danhgia.findAll({
+      where: {
+        id_sanpham,
+        is_ban: 0,
+      },
+      order: [["ngay_tao", "DESC"]],
+    });
+  } catch (error) {
+    console.log("getDanhGiaService error:", error);
+    return null;
+  }
+};
+
+const createDanhGiaService = async (
+  id_user,
+  id_sanpham,
+  id_order,
+  so_sao,
+  noi_dung,
+  hinh_anh
+) => {
+  try {
+    const result = await Danhgia.create({
+      id_user,
+      id_sanpham,
+      id_order,
+      so_sao,
+      noi_dung,
+      hinh_anh,
+    });
+
+    return result;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+const checkDanhGiaService = async (id_user, id_sanpham, id_order) => {
+  try {
+    const result = await Danhgia.findOne({
+      where: { id_user: id_user, id_sanpham: id_sanpham, id_order: id_order },
+    });
+
+    return result;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+const getAddressesByUserService = async (id_user) => {
+  try {
+    return await ShippingAddress.findAll({
+      where: { id_user },
+      order: [["is_choose", "DESC"]],
+    });
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+
+const createAddressService = async (data) => {
+  try {
+    // nếu chọn làm mặc định → reset các địa chỉ khác
+    if (data.is_choose === 1) {
+      await ShippingAddress.update(
+        { is_choose: 0 },
+        { where: { id_user: data.id_user } }
+      );
+    }
+
+    return await ShippingAddress.create(data);
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+
+const updateAddressService = async (id, data) => {
+  try {
+    const address = await ShippingAddress.findByPk(id);
+    if (!address) return null;
+
+    if (data.is_choose === 1) {
+      await ShippingAddress.update(
+        { is_choose: 0 },
+        { where: { id_user: address.id_user } }
+      );
+    }
+
+    await address.update(data);
+    return address;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+
+const deleteAddressService = async (id) => {
+  try {
+    const address = await ShippingAddress.findByPk(id);
+    if (!address) return false;
+
+    await address.destroy();
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};
+
+const chooseAddressService = async (id) => {
+  try {
+    const address = await ShippingAddress.findByPk(id);
+    if (!address) return null;
+
+    await ShippingAddress.update(
+      { is_choose: 0 },
+      { where: { id_user: address.id_user } }
+    );
+
+    address.is_choose = 1;
+    await address.save();
+
+    return address;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+const truKho = async (item) => {
+  const kho = await kho_sanpham.findOne({
+    where: {
+      id_sanpham: item.id_sanpham,
+      id_rom: item.id_rom,
+      id_mausac: item.id_mau,
+    },
+  });
+
+  if (!kho) {
+    throw new Error("Không tồn tại kho sản phẩm");
+  }
+
+  if (kho.so_luong < item.soluong) {
+    throw new Error("Số lượng trong kho không đủ");
+  }
+
+  await kho.update({
+    so_luong: kho.so_luong - item.soluong,
+    trang_thai: kho.so_luong - item.soluong > 0 ? 1 : 0,
+  });
+};
+
+module.exports = {
+  createUserService,
+  loginUserService,
+  getSanPhamService,
+  getSanPhamIDService,
+  getDanhMucService,
+  getMauSacService,
+  getBlogService,
+  getUserService,
+  getGioHangApi,
+  updateGioHangService,
+  addGioHangService,
+  updateMauGioHangService,
+  createOrderService,
+  createOrderItemService,
+  getOrdersService,
+  getOrderItemService,
+  getSanPhamALLIDService,
+  deleteGioHangService,
+  getRomService,
+  getRomByIDService,
+  updateRomGioHangService,
+  getDanhGiaService,
+  createDanhGiaService,
+  checkDanhGiaService,
+  getAddressesByUserService,
+  createAddressService,
+  updateAddressService,
+  deleteAddressService,
+  chooseAddressService,
+  truKho,
+};

@@ -1,0 +1,32 @@
+@import "tailwindcss";
+@import "@fortawesome/fontawesome-free/css/all.min.css";
+
+html,
+body {
+  margin: 0;
+}
+.carousel .control-arrow {
+  background: rgb(128, 125, 125) !important; /* nền trắng */
+  border-radius: 50% !important; /* hình tròn */
+  width: 40px !important;
+  height: 40px !important;
+  opacity: 0.8; /* độ mờ */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carousel .control-arrow:hover {
+  opacity: 1; /* khi hover */
+}
+.carousel .control-prev.control-arrow,
+.carousel .control-next.control-arrow {
+  top: 50% !important; /* đặt ở giữa chiều cao */
+  transform: translateY(-50%) !important;
+}
+.carousel .control-dots {
+  position: absolute;
+  top: 50% !important; /* giữa chiều cao */
+  transform: translateY(-50%);
+  width: 100%;
+}
